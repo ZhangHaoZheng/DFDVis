@@ -1,0 +1,67 @@
+#furtherStateGraph-left-wrapper {
+	height: 100%;
+	width: 5%;
+	float: left;
+}
+#furtherStateGraph-right-wrapper {
+	height: 100%;
+	width: 95%;
+	float: right;
+}
+#furtherStateGraph-left-div {
+	height: 100%;
+	width: 84%;
+	float: left;
+}
+#furtherStateGraph-right-div {
+	height: 100%;
+	width: 16%;
+	float: right;
+}
+.process-node {
+	stroke: #6C6C6C;
+	stroke-width: 1;
+}
+.satisfied-Node {
+	fill: #E0E0E0;
+}
+.unsatisfied-Node {
+	fill: white;
+}
+.process-line {
+	stroke-width: 1;
+	opacity: 0.7;
+}
+.zero-time-line {
+	stroke: #BEBEBE;
+	fill: #BEBEBE;
+}
+.one-time-line {
+	stroke: #6C6C6C;
+	fill: #6C6C6C;
+}
+.moreThanTwo-time-line {
+	stroke: #000000;
+	fill: #000000;
+}
+.process-name {
+	font-size: 10px;
+}
+.process-text {
+	font-size: 10px;
+}
+.process-animation {
+	stroke: gray !important;
+	animation-name: process-highlight;
+ 	animation-duration: 1s;
+  	animation-timing-function: linear;
+  	animation-iteration-count: 3;
+}
+@keyframes process-highlight {
+    0% {}
+    50% {
+      	opacity: 1;
+     	stroke-width: 2;
+    }
+    100% {}
+}

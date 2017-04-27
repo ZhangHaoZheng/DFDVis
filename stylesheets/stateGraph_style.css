@@ -1,0 +1,160 @@
+.circlestmp {
+	stroke: black;
+	stroke-width: 1;
+	fill: lightgray;
+}
+.linetmp {
+	stroke-width: 1;
+	stroke: gray;
+	fill: none;
+}
+.name {
+
+}
+body {
+	overflow: hidden;
+}
+.normalLine {
+	stroke-width:1px;
+	stroke: #888888;
+	fill: #888888;
+	opacity: 0.8;
+	z-index: 0;
+}
+.ExtraLine {
+	stroke-width:1px;
+	stroke: #888888;
+	fill: #888888;
+	opacity: 0.2;
+	z-index: 0;
+}
+.BufferLine {
+	opacity: 0.15 !important;
+}
+.normalNode {
+	stroke: steelblue;
+	stroke-width: 1;
+	fill: lightgray;
+	cursor: pointer;
+	z-index: 2;
+	r: 4;
+}
+.siblingNode {
+	stroke: steelblue;
+	stroke-width: 1;
+	cursor: pointer;
+	r: 3;
+	opacity: 0.5;
+	z-index: 1;
+}
+.unexpandedNode {
+	stroke: white;
+	stroke-width: 1;
+	fill: steelblue;
+}
+.nowNode {
+	stroke-width: 2;
+	stroke: FireBrick;
+}
+.pastNode {
+	stroke-width: 2 !important;
+	stroke: Peru !important;
+	opacity: 0.8 !important;
+}
+.undrawedNode {
+	fill: lightgray;
+	stroke-width: 1;
+	stroke: gray;
+	opacity: 0.3;
+	cursor: pointer;
+	z-index: 2;
+}
+.deadNode {
+	fill: #BB3D00 !important;
+	opacity: 0.9 !important;
+}
+.fullBufferNode {
+	opacity: 1 !important;
+}
+.emptyBufferNode {
+	opacity: 0.15 !important;
+}
+.siblingExtraLine {
+	stroke-width:1px;
+	stroke: #888888;
+	fill: #888888;
+	opacity: 0.2;
+	z-index: 0;
+}
+.overviewRootLine {
+	stroke-width: 1px;
+	stroke: #9393FF;
+	fill: #9393FF;
+	opacity: 0.5;
+	z-index: 0;
+}
+.overviewPastLine {
+	stroke-width: 1px;
+	stroke: Peru;
+	fill: Peru;
+	opacity: 0.5;
+	z-index: 0;
+}
+.hybridRootPastLine {
+	stroke: #9F5000;
+	fill: #9F5000;
+	opacity: 0.6;
+	z-index: 0;
+}
+.action {
+	font-size: 13px;
+	text-align: center;
+	font-family: arial;
+}
+.action-hidden {
+	visibility: hidden;
+}
+.d3-tip {
+  line-height: 1;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  border-radius: 2px;
+}
+.focus-highlight {
+	animation-name: highlight-animation;
+ 	animation-duration: 1s;
+  	animation-timing-function: linear;
+  	animation-iteration-count: infinite;
+}
+@keyframes highlight-animation {
+    0% {}
+    50% {
+      	opacity: 0.6;
+     	fill: #F00078;
+     	stroke: #F00078;
+     	stroke-width: 2;
+    }
+    100% {}
+}
+#stateGraph-detail {
+	height: 100%;
+	width: 50%;
+	float: left;
+}
+#stateGraph-overview {
+	height: 100%;
+	width: 50%;
+	float: right;
+}
+#detail-overview-div {
+	height: 100%;
+	width: 95%;
+	float: right;
+}
+#stateGraph-toolBarDiv {
+	overflow-y: auto;
+	height: 100%;
+	width: 5%;
+	float: left;
+}
