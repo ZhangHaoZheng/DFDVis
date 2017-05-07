@@ -1,0 +1,17 @@
+#left-span6-left {
+	float: left;
+	width: 97%;
+}
+#left-span6-right {
+	float: right;
+	width: 3%;
+	margin: 2px 0px;
+}
+.two-state-view {
+	float: left;
+	width: 100%;
+}
+.comparison-view {
+	float: right;
+	display: none;
+}
