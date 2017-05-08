@@ -68,7 +68,7 @@ var stateGraph = {
 		self._stateGraph_overview_g = self._stateGraph_overview_svg.append("g")
 			.attr("transform", "translate(" + self._leftOverviewInterval + "," + self._border + ")");
 		self._stateGraph_detail_g.call(self._tip);
-		
+		self._drawDepartLine();
 		_zoom();
 		self._translateToGraph(output);
 		self._addButton();
@@ -1562,7 +1562,24 @@ var stateGraph = {
 		self._stateGraph_overview_g.selectAll(".circle")
 			.classed("emptyBufferNode", false);
 	},
-	clear :function() {
+	_drawDepartLine: function() {
+		var self = this;
+		var height = $("#" + self.stateGraphOverviewDivid).height();
+		var width = $("#" + self.stateGraphOverviewDivid).width();
+		self._stateGraph_overview_svg.append("line")
+			.attr("class", "dash-segmentation-Line")
+			.attr("x1", 0)
+			.attr("y1", 0)
+			.attr("x2", 0)
+			.attr("y2", height);
+		self._stateGraph_overview_svg.append("line")
+			.attr("class", "dash-segmentation-Line")
+			.attr("x1", width)
+			.attr("y1", 0)
+			.attr("x2", width)
+			.attr("y2", height);
+	},
+	clear: function() {
 		var self = this;
 		d3.select("#" + self.stateGraphDivID)
 			.selectAll("div")

@@ -22,6 +22,7 @@
     <script src="js/initflowchart.js"></script>
     <script src="js/stateGraph.js"></script>
     <script src="js/processGraph.js"></script>
+    <script src="js/compareGraph.js"></script>
     <!--init begin-->
     <script src="js/main.js"></script>
 </head>
@@ -52,7 +53,7 @@
         </div>
         <!--流图栏-->
         <div class="row-fluid" id="main-content-div">
-            <div class="span5">
+            <div class="span5" id="main-left">
                 <div id="left-span6-left">
                     <div class="row-fluid" id="btn-row">
                         <div class="btn-group">
@@ -93,11 +94,11 @@
                     </div>
                 </div>
                 <div id="left-span6-right">
-                     <button id="btn-retract" class="btn" type="button" id="btn-retract"><em class="icon-align-center"><<</em></button>
+                     <button id="btn-retract" class="btn" type="button" id="btn-retract" ifRetract="false"><em class="icon-align-center" id="btn-retract-em"><<</em></button>
                 </div>
             </div>
             <!-- 右侧部分 -->
-            <div class="span7">
+            <div class="span7" id="main-right">
                 <div class="two-state-view" id="statediv">
                     <div class="accordion-group" id="mergeStateGraph1">
                     </div>

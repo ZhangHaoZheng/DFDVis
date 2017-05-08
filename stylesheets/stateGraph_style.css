@@ -175,3 +175,8 @@ body {
     }
     100% {}
 }
+.dash-segmentation-Line {
+	stroke: #D0D0D0;
+	stroke-width: 2px;
+	stroke-dasharray: 2px;
+}
