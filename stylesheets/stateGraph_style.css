@@ -14,6 +14,44 @@
 body {
 	overflow: hidden;
 }
+#stateGraph1-detail {
+	height: 100%;
+	width: 50%;
+	float: left;
+}
+#stateGraph1-overview {
+	height: 100%;
+	width: 50%;
+	float: right;
+}
+#stateGraph1-toolBarDiv {
+	overflow-y: auto;
+	height: 100%;
+	width: 5%;
+	float: left;
+}
+#stateGraph2-detail {
+	height: 100%;
+	width: 50%;
+	float: left;
+}
+#stateGraph2-overview {
+	height: 100%;
+	width: 50%;
+	float: right;
+}
+#stateGraph2-toolBarDiv {
+	overflow-y: auto;
+	height: 100%;
+	width: 5%;
+	float: left;
+}
+#detail-overview-div {
+	height: 100%;
+	width: 95%;
+	float: right;
+}
+
 .normalLine {
 	stroke-width:1px;
 	stroke: #888888;
@@ -136,25 +174,4 @@ body {
      	stroke-width: 2;
     }
     100% {}
-}
-#stateGraph-detail {
-	height: 100%;
-	width: 50%;
-	float: left;
-}
-#stateGraph-overview {
-	height: 100%;
-	width: 50%;
-	float: right;
-}
-#detail-overview-div {
-	height: 100%;
-	width: 95%;
-	float: right;
-}
-#stateGraph-toolBarDiv {
-	overflow-y: auto;
-	height: 100%;
-	width: 5%;
-	float: left;
 }

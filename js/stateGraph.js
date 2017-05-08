@@ -1,12 +1,13 @@
-var rootNode;
-var maxDepth;//实节点的最大深度
-var output;
 var stateGraph = {
+	rootNode: undefined,
+	maxDepth: undefined,//实节点的最大深度
+	output: undefined,
+	processGraphObject: undefined,
 	numOfParentLevel: 2,
 	numOfChildrenLevel: 3,
 	stateGraphDivID: undefined,
-	stateGraphDetailDivId: "stateGraph-detail",
-	stateGraphOverviewDivid: "stateGraph-overview",
+	stateGraphDetailDivId: undefined,
+	stateGraphOverviewDivid: undefined,
 	nodeNow: undefined,
 	nodePast: undefined,
 	nodesNow: undefined,
@@ -37,9 +38,13 @@ var stateGraph = {
 	_maxWidth: 0, //_nodeOfminDepth二维数组的最大宽度
 	_overview_r: 0, //overview中节点半径
 	_tip: d3.tip().attr("class", "d3-tip"),
-	initialize: function(div_id) {
+	initialize: function(div_id, output, processGraphObject) {
 		var self = this;
 		self.stateGraphDivID = div_id;
+		self.stateGraphDetailDivId = div_id + "-detail";
+		self.stateGraphOverviewDivid = div_id + "-overview";
+		self.output = output;
+		self.processGraphObject = processGraphObject;
 		_initailizeTheVariables();
 		d3.select("#" + div_id)
 			.selectAll("div").remove();
@@ -97,11 +102,11 @@ var stateGraph = {
 		var self = this;
 		_translate();
 		var idpath = [];
-		idpath[rootNode.id] = true;
-		maxDepth = 0;
-		rootNode.maxdepth = 0;
-		_calculateMaxDepthForNodes(rootNode, idpath, 1);
-		for(var i = 0; i < maxDepth + 1; i++) {
+		idpath[self.rootNode.id] = true;
+		self.maxDepth = 0;
+		self.rootNode.maxdepth = 0;
+		_calculateMaxDepthForNodes(self.rootNode, idpath, 1);
+		for(var i = 0; i < self.maxDepth + 1; i++) {
 			self._nodeOfminDepth[i] = [];
 		}
 		_calculateMinDepthForNodes();
@@ -183,13 +188,13 @@ var stateGraph = {
 						self._idToNode[dfdToDelete[i].id].out.splice(dfdToDelete[i].index, 1);
 					}
 				}
-				rootNode = self._idToNode[formalDef];
+				self.rootNode = self._idToNode[formalDef];
 			}
 			else {
 				var completeFormalDef = output.result[0][l1 - 1].formalDef;
 				self._idToNode[nodeName].id = completeFormalDef;
 				self._idToNode[completeFormalDef] = self._idToNode[nodeName];
-				rootNode = self._idToNode[completeFormalDef];
+				self.rootNode = self._idToNode[completeFormalDef];
 			}
 		}
 		function _calculateMaxDepthForNodes(node, idpath, length) {
@@ -202,8 +207,8 @@ var stateGraph = {
 				}
 				if((out_n.maxdepth == undefined) || (out_n.maxdepth < length)) {
 					out_n.maxdepth = length;
-					if(maxDepth < length) {
-						maxDepth = length;
+					if(self.maxDepth < length) {
+						self.maxDepth = length;
 					}
 					var tmp = [];
 					tmp[out_n.id] = true;
@@ -215,10 +220,10 @@ var stateGraph = {
 			//为每个节点计算mindepth，广搜
 			var queue = [];
 			var ifPushed = [];
-			queue.push(rootNode);
-			rootNode.mindepth = 0;
-			ifPushed[rootNode.id] = true;
-			self._nodeOfminDepth[0].push(rootNode.id);
+			queue.push(self.rootNode);
+			self.rootNode.mindepth = 0;
+			ifPushed[self.rootNode.id] = true;
+			self._nodeOfminDepth[0].push(self.rootNode.id);
 			while(queue.length != 0) {
 				var n = queue.shift();
 				var l = n.out.length;
@@ -607,7 +612,7 @@ var stateGraph = {
 							+ self._fixTheSelectProblem(l.id))
 							.classed("focus-highlight", true);
 					self._mouseoverLink(this);
-					processGraph.mouseoverLinkFromStateGraph(l.action);
+					self.processGraphObject.mouseoverLinkFromStateGraph(l.action);
 				})
 				.on("mouseout", function(l) {
 					self._stateGraph_overview_g.select("#" 
@@ -620,7 +625,7 @@ var stateGraph = {
 							.classed("focus-highlight", false);
 					d3.select(this).classed("focus-highlight", false);
 					self._mouseoutLink(this);
-					processGraph.mouseoutLinkFromStateGraph(l.action);
+					self.processGraphObject.mouseoutLinkFromStateGraph(l.action);
 				})
 				.transition()
 				.delay(function() {
@@ -885,10 +890,10 @@ var stateGraph = {
 			}
 			self.fromRootShortest = [];
 			self.fromPastShortest = [];
-			if(node_id != rootNode.id) {
-				self.fromRootShortest = _findShortestRoute(rootNode, node_id);
+			if(node_id != self.rootNode.id) {
+				self.fromRootShortest = _findShortestRoute(self.rootNode, node_id);
 			}
-			if(self.nodePast != rootNode.id) {
+			if(self.nodePast != self.rootNode.id) {
 				self.fromPastShortest = _findShortestRoute(self._idToNode[self.nodePast], node_id);
 			}
 			//改变processGraph中的样式
@@ -896,34 +901,34 @@ var stateGraph = {
 			if(ifProcessGraph === false) {
 				//nothing
 			}
-			else if(node_id == rootNode.id) {
-				processGraph.renderView(null);
+			else if(node_id == self.rootNode.id) {
+				self.processGraphObject.renderView(null);
 			}
 			else {
 				var actionList = [];
 				for(var i = 0; i < self.fromRootShortest.length; i++) {
 					actionList.push(self.fromRootShortest[i].action);
 				}
-				processGraph.renderView(actionList);
+				self.processGraphObject.renderView(actionList);
 			}
 			//关于processGraph中的动画
 			if(ifProcessGraph === false) {
 				//nothing
 			}
-			else if(self.nodePast == rootNode.id) {
+			else if(self.nodePast == self.rootNode.id) {
 				/*var actionList = [];
 				for(var i = 0; i < self.fromRootShortest.length; i++) {
 					actionList.push(self.fromRootShortest[i].action);
 				}
-				processGraph.setActionListFromPast(actionList);*/
-				processGraph.setActionListFromPast([]);
+				self.processGraphObject.setActionListFromPast(actionList);*/
+				self.processGraphObject.setActionListFromPast([]);
 			}
 			else {
 				var actionList = [];
 				for(var i = 0; i < self.fromPastShortest.length; i++) {
 					actionList.push(self.fromPastShortest[i].action);
 				}
-				processGraph.setActionListFromPast(actionList);
+				self.processGraphObject.setActionListFromPast(actionList);
 			}
 			_drawLines(self.fromRootShortest, "overviewRootLine", self._linesRootOverviewPrefix);
 			_drawLines(self.fromPastShortest, "overviewPastLine", self._linesPastOverviewPrefix);
@@ -990,7 +995,7 @@ var stateGraph = {
 					line.id = line.source.id + line.target.id;
 					lines.push(line);
 					tmp_tmp_n = tmp_tmp_n.backPointer;
-					if(source.id == rootNode.id) {
+					if(source.id == self.rootNode.id) {
 						overviewRootShortest[line.id] = true;
 					}
 					else if(source.id == self.nodePast) {
@@ -1026,7 +1031,7 @@ var stateGraph = {
 								line.id = line.source.id + line.target.id;
 								lines.push(line);
 								tmp_tmp_n = tmp_tmp_n.backPointer;
-								if(source.id == rootNode.id) {
+								if(source.id == self.rootNode.id) {
 									overviewRootShortest[line.id] = true;
 								}
 								else if(source.id == self.nodePast) {
@@ -1089,7 +1094,7 @@ var stateGraph = {
 							+ self._fixTheSelectProblem(l.id))
 							.classed("focus-highlight", true);
 						self._mouseoverLink(this);
-						processGraph.mouseoverLinkFromStateGraph(l.action);
+						self.processGraphObject.mouseoverLinkFromStateGraph(l.action);
 					})
 					.on("mouseout", function(l) {
 						self._stateGraph_detail_g.select("#" 
@@ -1105,7 +1110,7 @@ var stateGraph = {
 							+ self._fixTheSelectProblem(l.id))
 							.classed("focus-highlight", false);
 						self._mouseoutLink(this);
-						processGraph.mouseoutLinkFromStateGraph(l.action);
+						self.processGraphObject.mouseoutLinkFromStateGraph(l.action);
 					})
 			}
 			function _setRouteVisibleOrNotInOverview() {
@@ -1204,7 +1209,7 @@ var stateGraph = {
 		//按钮部分
 		var toolBarDiv = d3.select("#" + self.stateGraphDivID)
 			.append("div")
-			.attr("id", "stateGraph-toolBarDiv");
+			.attr("id", self.stateGraphDivID + "-toolBarDiv");
 		//帮助按钮
 		/*toolBarDiv.append("span")
 			.attr("id", "stateGraph_help")
@@ -1443,12 +1448,14 @@ var stateGraph = {
 	},
 	hideText: function() {
 		//隐藏action避免过于凌乱
-		d3.selectAll(".action")
+		var self = this;
+		self._stateGraph_detail_g.selectAll(".action")
 			.classed("action-hidden", true);
 	},
 	showText: function() {
 		//显示action
-		d3.selectAll(".action")
+		var self = this;
+		self._stateGraph_detail_g.selectAll(".action")
 			.classed("action-hidden", false);
 	},
 	addUpperLevelToShow: function() {
@@ -1495,10 +1502,10 @@ var stateGraph = {
 			/*detailLineID = self._linesPrefix
 				+ self._fixTheSelectProblem(self.fromPastShortest[index].id);*/
 		}
-		var overviewLineObject = d3.select("#" + overviewLineID);
+		var overviewLineObject = self._stateGraph_overview_g.select("#" + overviewLineID);
 		//var detailLineObject = d3.select("#" + detailLineID);
 		var oldOverviewClass = overviewLineObject.attr("class");
-		d3.select("#" + overviewLineID)
+		self._stateGraph_overview_g.select("#" + overviewLineID)
 			.transition()
 			.delay(delay)
 			.duration(duration)
@@ -1554,5 +1561,14 @@ var stateGraph = {
 			.classed("fullBufferNode", false);
 		self._stateGraph_overview_g.selectAll(".circle")
 			.classed("emptyBufferNode", false);
+	},
+	clear :function() {
+		var self = this;
+		d3.select("#" + self.stateGraphDivID)
+			.selectAll("div")
+			.remove();
 	}
 }
+
+var stateGraph1 = Object.create(stateGraph);
+var stateGraph2 = Object.create(stateGraph);

@@ -15,3 +15,29 @@
 	float: right;
 	display: none;
 }
+#mergeStateGraph1 {
+	width: 100%;
+}
+#mergeStateGraph2 {
+	width: 100%;
+}
+#stateGraph1 {
+	float: left;
+	width: 55%;
+	height: 100%;
+}
+#stateGraph2 {
+	float: left;
+	width: 55%;
+	height: 100%;
+}
+#furtherStateGraph1 {
+	float: right;
+	width: 45%;
+	height: 100%;
+}
+#furtherStateGraph2 {
+	float: right;
+	width: 45%;
+	height: 100%;
+}

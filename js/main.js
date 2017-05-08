@@ -4,7 +4,7 @@ function ShowTips(tipStr) {
     $("#errortip").show();
 }
 
-function SendDfdObjToServer(dfdObj) {
+function SendDfdObjToServer(dfdObj, dfdIndex) {
     $.ajax({
         type: "POST",
         url: "http://xiongbear.cn:3000/dfdvis",
@@ -18,8 +18,20 @@ function SendDfdObjToServer(dfdObj) {
             if(dfdObj.DFDID==2)
                 DFD1GetTheResFromSever($.extend(true, {}, data));
             if(data.result != "Error"){
-                output = data;
-                stateGraph.initialize("stateGraph");
+                if(dfdIndex === 1) {
+                    stateGraph1.initialize("stateGraph1", data, processGraph1);
+                }
+                else if(dfdIndex === 2) {
+                    stateGraph2.initialize("stateGraph2", data, processGraph2);
+                }
+            }
+            else {
+                if(dfdIndex === 1) {
+                    stateGraph1.clear();
+                }
+                else if(dfdIndex === 2) {
+                    stateGraph2.clear();
+                }
             }
         },
         error: function(message) {
@@ -45,23 +57,50 @@ $(document).ready(function() {
 
     var heightForTwoDfddraw = mainContentDivHeight - 34 - 36 - 36 - 12;
     $(".flowchart-example-container").height(heightForTwoDfddraw / 2);
-    $("#stateGraph").height($("#btn-row").height() + $("#dfddiv").height() / 2 - 4);
-    //右下的view
-    $("#furtherStateGraph").height($("#dfddiv").height() / 2 - 4);
-    var leftWrapper = d3.select("#furtherStateGraph")
+    $("#mergeStateGraph1").height($("#btn-row").height() + $("#dfddiv").height() / 2 - 4);
+    $("#mergeStateGraph2").height($("#dfddiv").height() / 2 - 4);
+    //mergeStateGraph1
+    d3.select("#mergeStateGraph1")
         .append("div")
-        .attr("id", "furtherStateGraph-left-wrapper");
-    var rightWrapper = d3.select("#furtherStateGraph")
+        .attr("id", "stateGraph1");
+    d3.select("#mergeStateGraph1")
         .append("div")
-        .attr("id", "furtherStateGraph-right-wrapper");
+        .attr("id", "furtherStateGraph1");
+    var leftWrapper = d3.select("#furtherStateGraph1")
+        .append("div")
+        .attr("id", "furtherStateGraph1-left-wrapper");
+    var rightWrapper = d3.select("#furtherStateGraph1")
+        .append("div")
+        .attr("id", "furtherStateGraph1-right-wrapper");
     rightWrapper.append("div")
-        .attr("id", "furtherStateGraph-left-div")
+        .attr("id", "furtherStateGraph1-left-div")
         .append("svg")
-        .attr("id", "furtherStateGraph-left-svg")
-        .attr("height", $("#furtherStateGraph").height())
-        .attr("width", $("#furtherStateGraph-left-div").width());
+        .attr("id", "furtherStateGraph1-left-svg")
+        .attr("height", $("#furtherStateGraph1").height())
+        .attr("width", $("#furtherStateGraph1-left-div").width());
     rightWrapper.append("div")
-        .attr("id", "furtherStateGraph-right-div");
+        .attr("id", "furtherStateGraph1-right-div");
+    //mergeStateGraph2
+    d3.select("#mergeStateGraph2")
+        .append("div")
+        .attr("id", "stateGraph2");
+    d3.select("#mergeStateGraph2")
+        .append("div")
+        .attr("id", "furtherStateGraph2");
+    var leftWrapper = d3.select("#furtherStateGraph2")
+        .append("div")
+        .attr("id", "furtherStateGraph2-left-wrapper");
+    var rightWrapper = d3.select("#furtherStateGraph2")
+        .append("div")
+        .attr("id", "furtherStateGraph2-right-wrapper");
+    rightWrapper.append("div")
+        .attr("id", "furtherStateGraph2-left-div")
+        .append("svg")
+        .attr("id", "furtherStateGraph2-left-svg")
+        .attr("height", $("#furtherStateGraph2").height())
+        .attr("width", $("#furtherStateGraph2-left-div").width());
+    rightWrapper.append("div")
+        .attr("id", "furtherStateGraph2-right-div");
     //手风琴效果的控制
     var currentDivDisplayed = 2;
     $("#accordion-element-1").on('show.bs.collapse', function() {
@@ -145,9 +184,18 @@ $(document).ready(function() {
         if (flowChartReturn != 0) {
             console.log("***Ready to send to the server***");
             console.log(flowChartReturn);
-            SendDfdObjToServer(flowChartReturn.dfdDefine1);
-            processGraph.initialize(flowChartReturn.dfdDefine1);
-            //SendDfdObjToServer(flowChartReturn.dfdDefine2);
+            SendDfdObjToServer(flowChartReturn.dfdDefine1, 1);
+            processGraph1.initialize(flowChartReturn.dfdDefine1, 
+                "furtherStateGraph1-left-wrapper", 
+                "furtherStateGraph1-left-svg",
+                "furtherStateGraph1-right-div",
+                stateGraph1);
+            SendDfdObjToServer(flowChartReturn.dfdDefine2, 2);
+            processGraph2.initialize(flowChartReturn.dfdDefine2, 
+                "furtherStateGraph2-left-wrapper", 
+                "furtherStateGraph2-left-svg",
+                "furtherStateGraph2-right-div",
+                stateGraph2);
         }
     });
 
