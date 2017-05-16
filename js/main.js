@@ -20,11 +20,13 @@ function SendDfdObjToServer(dfdObj, dfdIndex) {
             if(data.result != "Error"){
                 if(dfdIndex === 1) {
                     stateGraph1.initialize("stateGraph1", data, processGraph1);
+                    compareGraph.addStateGraph(stateGraph1.rootNode, 1);
                 }
                 else if(dfdIndex === 2) {
                     stateGraph2.initialize("stateGraph2", data, processGraph2);
+                    compareGraph.addStateGraph(stateGraph2.rootNode, 2);
                 }
-                compareGraph.addStateGraph();
+                compareGraph.initialize("comparisondiv", "comparison-svg");
             }
             else {
                 if(dfdIndex === 1) {
@@ -190,6 +192,7 @@ $(document).ready(function() {
         if (flowChartReturn != 0) {
             console.log("***Ready to send to the server***");
             console.log(flowChartReturn);
+            compareGraph.clear();
             SendDfdObjToServer(flowChartReturn.dfdDefine1, 1);
             processGraph1.initialize(flowChartReturn.dfdDefine1, 
                 "furtherStateGraph1-left-wrapper", 
@@ -204,61 +207,63 @@ $(document).ready(function() {
                 stateGraph2);
         }
     });
-    //btn-retract
-    function showComparisonPart() {
-        var originalStateWidth = $("#statediv").width();
-        var originalFlowchartWidth = $("#left-span6-left").width();
-        d3.select("#main-right")
-            .style("width", originalStateWidth + originalFlowchartWidth + "px");        
-        d3.select("#comparisondiv")
-            .style("width", originalFlowchartWidth - 8 + "px")
-            .style("height", $("#main-right").height() - 8 + "px")
-            .style("display", "block")
-            .classed("accordion-group", true);
-        d3.select("#left-span6-left")
-            .style("display", "none");
-        d3.select("#left-span6-right")
-            .classed("retract-float", true);
-        d3.select("#main-left")
-            .classed("retract-width", true);
-        d3.select("#btn-retract-em")
-            .html(">>");
-    }
-    function hideComparisonPart() {
-        var originalStateWidth = $("#statediv").width();
-        var originalFlowchartWidth = $("#comparisondiv").width() + 8;
-        d3.select("#main-right")
-            .style("width", originalStateWidth + "px");
-        d3.select("#comparisondiv")
-            .style("width", 0 + "px")
-            .style("display", "none")
-            .classed("accordion-group", false);
-        d3.select("#left-span6-left")
-            .style("width", originalFlowchartWidth + "px")
-            .style("display", "block");
-        d3.select("#left-span6-right")
-            .classed("retract-float", false);
-        d3.select("#main-left")
-            .classed("retract-width", false);
-        d3.select("#btn-retract-em")
-            .html("<<");
-    }
     $("#btn-retract").click(function() {
-        console.log("click!!!!!!!!!!!1")
-        var ifRetract = d3.select("#btn-retract").attr("ifRetract");
-        if(ifRetract === "false") {
-            showComparisonPart();
-            d3.select("#btn-retract").attr("ifRetract", "true");
-        }
-        else if(ifRetract === "true") {
-            hideComparisonPart();
-            d3.select("#btn-retract").attr("ifRetract", "false");
-        }
+        retract();
     });
     //初始化流图输入
     initFlowchart();
 });
-
+//btn-retract
+function showComparisonPart() {
+    var originalStateWidth = $("#statediv").width();
+    var originalFlowchartWidth = $("#left-span6-left").width();
+    d3.select("#main-right")
+        .style("width", originalStateWidth + originalFlowchartWidth + "px");        
+    d3.select("#comparisondiv")
+        .style("width", originalFlowchartWidth - 8 + "px")
+        .style("height", $("#main-right").height() - 8 + "px")
+        .style("display", "block")
+        .classed("accordion-group", true);
+    d3.select("#left-span6-left")
+        .style("display", "none");
+    d3.select("#left-span6-right")
+        .classed("retract-float", true);
+    d3.select("#main-left")
+        .classed("retract-width", true);
+    d3.select("#btn-retract-em")
+        .html(">>");
+}
+function hideComparisonPart() {
+    var originalStateWidth = $("#statediv").width();
+    var originalFlowchartWidth = $("#comparisondiv").width() + 8;
+    d3.select("#main-right")
+        .style("width", originalStateWidth + "px");
+    d3.select("#comparisondiv")
+        .style("width", 0 + "px")
+        .style("display", "none")
+        .classed("accordion-group", false);
+    d3.select("#left-span6-left")
+        .style("width", originalFlowchartWidth + "px")
+        .style("display", "block");
+    d3.select("#left-span6-right")
+        .classed("retract-float", false);
+    d3.select("#main-left")
+        .classed("retract-width", false);
+    d3.select("#btn-retract-em")
+        .html("<<");
+}
+function retract() {
+    console.log("click!!!!!!!!!!!1")
+    var ifRetract = d3.select("#btn-retract").attr("ifRetract");
+    if(ifRetract === "false") {
+        showComparisonPart();
+        d3.select("#btn-retract").attr("ifRetract", "true");
+    }
+    else if(ifRetract === "true") {
+        hideComparisonPart();
+        d3.select("#btn-retract").attr("ifRetract", "false");
+    }
+}
 //图1和图2分别得到响应
 function DFD1GetTheResFromSever(resObj)
 {
