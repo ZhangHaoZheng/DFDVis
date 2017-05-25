@@ -35,6 +35,8 @@ var compareGraph = {
 		self.compareGraphSvgG.call(self._tip);
 		self.newDfd1Root = self._constructNewGraph(self.dfd1Root);
 		self.newDfd2Root = self._constructNewGraph(self.dfd2Root);
+		console.log(self.newDfd1Root)
+		console.log(self.newDfd2Root)
 		tmpMergedObject = self._constructMergedGraph(self.newDfd1Root, self.newDfd2Root);
 		self.mergedRoot = tmpMergedObject.root;
 		self.mergedDict = tmpMergedObject.dict;
@@ -123,11 +125,11 @@ var compareGraph = {
 					for(var i = 0; i < head.child.out.length; i++) {
 						var objectInQueue = {};
 						if(head.child.out[i].state.pastParents) {
-							head.child.out[i].state.pastParents[head.parent.id] = true;
+							head.child.out[i].state.pastParents[ccsObject.id] = true;
 						}
 						else {
 							head.child.out[i].state.pastParents = [];
-							head.child.out[i].state.pastParents[head.parent.id] = true;
+							head.child.out[i].state.pastParents[ccsObject.id] = true;
 						}
 						objectInQueue.action = head.child.out[i].action;
 						objectInQueue.parent = ccsObject;
@@ -138,14 +140,12 @@ var compareGraph = {
 			}
 			else {
 				//action === tau
-				if(head.child.pastParents) {
-					if(head.child.pastParents[head.parent.id] === true) {
-						continue;
-					}
-				}
 				for(var i = 0; i < head.child.out.length; i++) {
 					var objectInQueue = {};
 					if(head.child.out[i].state.pastParents) {
+						if(head.child.out[i].state.pastParents[head.parent.id] === true) {
+							continue;
+						}
 						head.child.out[i].state.pastParents[head.parent.id] = true;
 					}
 					else {
@@ -201,6 +201,9 @@ var compareGraph = {
 						if(pairOfCcsDict[nextNode1.id + "To" + nextNode2.id]) {
 							var tmp = pairOfCcsDict[nextNode1.id + "To" + nextNode2.id];
 							mergedObject.commonActionDict[action].developList.push(tmp);
+							if(tmp.ifBalance === 0) {
+								mergedObject.commonActionDict[action].count--;
+							}
 						}
 						else {
 							var nextMergedObject = mergeRecursively(nextNode1, nextNode2);
@@ -316,17 +319,18 @@ var compareGraph = {
 		var queue = [];
 		var ifVisited = [];
 		queue.push(Root);
+		ifVisited[Root.id] = true;
 		while(queue.length != 0) {
 			var head = queue.shift();
 			blocks.push(head);
 			blocksDict[head.id] = blocks.length - 1;
-			ifVisited[head.id] = true;
 			for(var i = 0; i < head.actionList.length; i++) {
 				var action = head.actionList[i];
 				var nextList = head.actionDict[action];
 				for(var j = 0; j < nextList.length; j++) {
 					if(ifVisited[nextList[j].id] != true) {
 						queue.push(nextList[j]);
+						ifVisited[nextList[j].id] = true;
 					}
 				}
 			}
@@ -355,20 +359,19 @@ var compareGraph = {
 		matrix[0][0].type = "none";
 		for(var i = 1; i < matrix.length; i++) {
 			for(var j = 1; j < matrix[i].length; j++) {
+				var mergedID = matrix[0][j].node.id + "To" + matrix[i][0].node.id;
 				matrix[i][j] = {};
-				if(self._ifEqual(matrix[i][0].node, matrix[0][j].node)) {
-					var mergedID = matrix[0][j].node.id + "To" + matrix[i][0].node.id;
+				if(mergedDict[mergedID]) {
 					matrix[i][j].type = "circle";
-					if(mergedDict[mergedID]) {
-						if(mergedDict[mergedID].ifBalance === 1) {
-							matrix[i][j].class = " BalancedCircle";
-							matrix[i][j].id = mergedID;
-						}
-						else {
-							matrix[i][j].class = " unBalancedCircle";
-							matrix[i][j].id = mergedID;
-						}
+					if(mergedDict[mergedID].ifBalance === 1) {
+						matrix[i][j].class = " BalancedCircle";
 					}
+					else {
+						matrix[i][j].class = " unBalancedCircle";
+					}
+					matrix[i][j].id = mergedID;
+					matrix[i][j].CCSid1 = mergedDict[mergedID].CCSid1;
+					matrix[i][j].CCSid2 = mergedDict[mergedID].CCSid2;
 				}
 				else {
 					matrix[i][j].type = "square";
@@ -400,10 +403,28 @@ var compareGraph = {
 							break;
 						case "node":
 							SvgG.append("circle")
+								.attr("id", function() {
+									return self.nodePrefix 
+										+ self._fixTheSelectProblem(toDrawObject.node.id);
+								})
 								.attr("cx", startPoint.x + (j + 0.5) * unitLength)
 								.attr("cy", startPoint.y + (i + 0.5) * unitLength)
+								.attr("ifTheTopOne", function() {
+									if(i === 0) {
+										return true;
+									}
+									else if(j === 0) {
+										return false;
+									}
+								})
 								.attr("CCS", toDrawObject.node.id)
-								.attr("class", "compareNode");
+								.attr("class", "compareNode")
+								.on("mouseover", function() {
+									self.mouseoverNode(this);
+								})
+								.on("mouseout", function() {
+									self.mouseoutNode(this);
+								});
 							break;
 						case "square":
 							SvgG.append("rect")
@@ -414,23 +435,20 @@ var compareGraph = {
 								.attr("class", "compareSquare");
 							break;
 						case "circle":
-							var tmpCircle = SvgG.append("circle")
+							SvgG.append("circle")
 								.attr("cx", startPoint.x + (j + 0.5) * unitLength)
 								.attr("cy", startPoint.y + (i + 0.5) * unitLength)
-								.attr("r", unitLength / 3);
-							if(toDrawObject.id) {
-								tmpCircle.attr("CCS", toDrawObject.id)
-									.attr("class", "compareCircle" + toDrawObject.class)
-									.on("mouseover", function() {
-										self.mouseoverCircle(this);
-									})
-									.on("mouseout", function() {
-										self.mouseoutCircle(this);
-									});
-							}
-							else {
-								tmpCircle.attr("class", "compareCircle");
-							}
+								.attr("r", unitLength / 3)
+								.attr("mergedCCS", toDrawObject.id)
+								.attr("CCS1", toDrawObject.CCSid1)
+								.attr("CCS2", toDrawObject.CCSid2)
+								.attr("class", "compareCircle" + toDrawObject.class)
+								.on("mouseover", function() {
+									self.mouseoverCircle(this);
+								})
+								.on("mouseout", function() {
+									self.mouseoutCircle(this);
+								});
 							break;
 					}
 				}
@@ -447,7 +465,13 @@ var compareGraph = {
 				.attr("class", function(l) {
 					return "compareLine" + l.class;
 				})
-				.attr("d", computeWidthOfLine);
+				.attr("d", computeWidthOfLine)
+				.on("mouseover", function(l) {
+					self.mouseoverLine(this, l.action);
+				})
+				.on("mouseout", function(l) {
+					self.mouseoutLine(this);
+				});
 		}
 		function computeWidthOfLine(l) {
 		 	var sourceIndex1 = blocks1Dict[l.source.CCSid1] + 1;
@@ -494,8 +518,9 @@ var compareGraph = {
 	},
 	mouseoverCircle: function (n) {
 		var self = this;
-		console.log(n)
-		var mergedID = d3.select(n).attr("CCS");
+		var mergedID = d3.select(n).attr("mergedCCS");
+		var CCS1 = d3.select(n).attr("CCS1");
+		var CCS2 = d3.select(n).attr("CCS2");
 		var canDo = "";
 		var cannotDo = "";
 		for(action in self.mergedDict[mergedID].commonActionDict) {
@@ -515,10 +540,67 @@ var compareGraph = {
 				+ "</font>";
 		});
 		self._tip.show();
+		stateGraph1.mouseoverNode(CCS1, true);
+		stateGraph2.mouseoverNode(CCS2, true);
 	},
 	mouseoutCircle: function (n) {
 		var self = this;
+		var CCS1 = d3.select(n).attr("CCS1");
+		var CCS2 = d3.select(n).attr("CCS2");
 		self._tip.hide();
+		stateGraph1.mouseoutNode(CCS1, true);
+		stateGraph2.mouseoutNode(CCS2, true);
+	},
+	mouseoverLine: function(l, action) {
+		var self = this;
+		d3.select(l)
+			.classed("focus-highlight", true);
+		self._tip.html(function() {
+			return "<b>action: </b><font color=\"#FF6347\">" + action + "</font>";
+		});
+		self._tip.show();
+	},
+	mouseoutLine: function(l) {
+		var self = this;
+		d3.select(l)
+			.classed("focus-highlight", false);
+		self._tip.hide();
+	},
+	mouseoverNode: function(n) {
+		var self = this;
+		var CCSid = d3.select(n).attr("CCS");
+		var ifTheTopOne = d3.select(n).attr("ifTheTopOne");
+		d3.select(n)
+			.classed("focus-highlight", true);
+		if(ifTheTopOne === "true") {
+			stateGraph1.mouseoverNode(CCSid);
+		}
+		else {
+			stateGraph2.mouseoverNode(CCSid);
+		}
+	},
+	mouseoutNode: function(n) {
+		var self = this;
+		var CCSid = d3.select(n).attr("CCS");
+		var ifTheTopOne = d3.select(n).attr("ifTheTopOne");
+		d3.select(n)
+			.classed("focus-highlight", false);
+		if(ifTheTopOne === "true") {
+			stateGraph1.mouseoutNode(CCSid);
+		}
+		else {
+			stateGraph2.mouseoutNode(CCSid);
+		}
+	},
+	mouseoverNodeFromStateGraph: function(id) {
+		var self = this;
+		self.compareGraphSvgG.select("#" + self.nodePrefix + self._fixTheSelectProblem(id))
+			.classed("focus-highlight", true);
+	},
+	mouseoutNodeFromStateGraph: function(id) {
+		var self = this;
+		self.compareGraphSvgG.select("#" + self.nodePrefix + self._fixTheSelectProblem(id))
+			.classed("focus-highlight", false);
 	},
 	clear: function () {
 		var self = this;

@@ -651,16 +651,12 @@ var stateGraph = {
 					_nodeClick(n);
 				})
 				.on("mouseover", function(n) {
-					d3.select(this).classed("focus-highlight", true);
-					self._stateGraph_overview_g.select("#" + self._circlesOverviewPrefix + self._fixTheSelectProblem(n.id))
-						.classed("focus-highlight", true);
-					self._mouseoverNode(n.id);
+					self.mouseoverNode(n.id);
+					compareGraph.mouseoverNodeFromStateGraph(n.id);
 				})
 				.on("mouseout", function(n) {
-					d3.select(this).classed("focus-highlight", false);
-					self._stateGraph_overview_g.select("#" + self._circlesOverviewPrefix + self._fixTheSelectProblem(n.id))
-						.classed("focus-highlight", false);
-					self._mouseoutNode(n.id);
+					self.mouseoutNode(n.id);
+					compareGraph.mouseoutNodeFromStateGraph(n.id);
 				})
 				.transition()
 				.delay(function() {
@@ -816,16 +812,12 @@ var stateGraph = {
 					_nodeClick(n);
 				})
 				.on("mouseover", function(n) {
-					d3.select(this).classed("focus-highlight", true);
-					self._stateGraph_detail_g.select("#" + self._circlesPrefix + self._fixTheSelectProblem(n.id))
-						.classed("focus-highlight", true);
-					self._mouseoverNode(n.id);
+					self.mouseoverNode(n.id);
+					compareGraph.mouseoverNodeFromStateGraph(n.id);
 				})
 				.on("mouseout", function(n) {
-					d3.select(this).classed("focus-highlight", false);
-					self._stateGraph_detail_g.select("#" + self._circlesPrefix + self._fixTheSelectProblem(n.id))
-						.classed("focus-highlight", false);
-					self._mouseoutNode(n.id);
+					self.mouseoutNode(n.id);
+					compareGraph.mouseoutNodeFromStateGraph(n.id);
 				});
 			circles.transition()
 				.delay(function(n) {
@@ -1411,25 +1403,37 @@ var stateGraph = {
 		}
 		return undefined;
 	},
-	_mouseoverNode: function(node_id) {
+	mouseoverNode: function(node_id, already_tip) {
 		//鼠标悬浮节点事件
 		var self = this;
 		var n = self._idToNode[node_id];
-		self._tip.html(function() {
-			return "<b>CCS definition: </b><font color=\"#FF6347\">" 
-				+ n.id 
-				+ "</font><br><b>the minimum actions from the initial state: </b><font color=\"#FF6347\">"
-				+ n.mindepth 
-				+ "</font>   <b>maximum actions: </b><font color=\"#FF6347\">" 
-				+ n.maxdepth 
-				+ "</font>";
-		});
-		self._tip.show();
+		self._stateGraph_overview_g.select("#" + self._circlesOverviewPrefix + self._fixTheSelectProblem(node_id))
+						.classed("focus-highlight", true);
+		self._stateGraph_detail_g.select("#" + self._circlesPrefix + self._fixTheSelectProblem(node_id))
+						.classed("focus-highlight", true);
+		if(!already_tip) {
+			self._tip.html(function() {
+				return "<b>CCS definition: </b><font color=\"#FF6347\">" 
+					+ n.id 
+					+ "</font><br><b>the minimum actions from the initial state: </b><font color=\"#FF6347\">"
+					+ n.mindepth 
+					+ "</font>   <b>maximum actions: </b><font color=\"#FF6347\">" 
+					+ n.maxdepth 
+					+ "</font>";
+			});
+			self._tip.show();
+		}
 	},
-	_mouseoutNode: function(node_id) {
+	mouseoutNode: function(node_id, already_tip) {
 		//鼠标移开事件
 		var self = this;
-		self._tip.hide();
+		self._stateGraph_overview_g.select("#" + self._circlesOverviewPrefix + self._fixTheSelectProblem(node_id))
+						.classed("focus-highlight", false);
+		self._stateGraph_detail_g.select("#" + self._circlesPrefix + self._fixTheSelectProblem(node_id))
+						.classed("focus-highlight", false);
+		if(!already_tip) {
+			self._tip.hide();
+		}
 	},
 	_mouseoverLink: function(l) {
 		//鼠标悬浮边事件
