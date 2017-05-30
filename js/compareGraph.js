@@ -6,6 +6,8 @@ var compareGraph = {
 	mergedRoot: undefined,
 	mergedDict: undefined,
 	links: undefined,
+	Dfd1Links: undefined,
+	Dfd2Links: undefined,
 	blocks1: undefined,
 	blocks1Dict: undefined,
 	blocks2: undefined,
@@ -21,6 +23,8 @@ var compareGraph = {
 
 	initialize: function (divID, svgID) {
 		var self = this;
+		var tmpDfd1Object;
+		var tmpDfd2Object;
 		var tmpMergedObject;
 		var tmpBlock1Object;
 		var tmpBlock2Object;
@@ -33,8 +37,12 @@ var compareGraph = {
 			.append("g")
 			.attr("id", self.compareGraphSvgID + "-g");
 		self.compareGraphSvgG.call(self._tip);
-		self.newDfd1Root = self._constructNewGraph(self.dfd1Root);
-		self.newDfd2Root = self._constructNewGraph(self.dfd2Root);
+		tmpDfd1Object = self._constructNewGraph(self.dfd1Root);
+		tmpDfd2Object = self._constructNewGraph(self.dfd2Root);
+		self.newDfd1Root = tmpDfd1Object.Root;
+		self.newDfd2Root = tmpDfd2Object.Root;
+		self.Dfd1Links = tmpDfd1Object.links;
+		self.Dfd2Links = tmpDfd2Object.links;
 		console.log(self.newDfd1Root)
 		console.log(self.newDfd2Root)
 		tmpMergedObject = self._constructMergedGraph(self.newDfd1Root, self.newDfd2Root);
@@ -56,6 +64,7 @@ var compareGraph = {
 			self.blocks1Dict,
 			self.blocks2Dict,
 			self.links);
+		self.letStateGraphDrawNoTauLinks(self.Dfd1Links, self.Dfd2Links);
 	},
 	addStateGraph: function (root, graphNumber) {
 		var self = this;
@@ -69,6 +78,7 @@ var compareGraph = {
 	_constructNewGraph: function (dfdRoot) {
 		var self = this;
 		var queue = [];
+		var links = [];
 		var ccsDict = [];
 		var newRoot = {};
 		newRoot.id = dfdRoot.id;
@@ -99,10 +109,20 @@ var compareGraph = {
 							}
 						}
 						if(ifExisted === false) {
+							var link = {};
+							link.source = head.parent.id;
+							link.target = childObject.id;
+							link.action = head.action;
+							links.push(link);
 							head.parent.actionDict[head.action].push(childObject);
 						}
 					}
 					else {
+						var link = {};
+						link.source = head.parent.id;
+						link.target = childObject.id;
+						link.action = head.action;
+						links.push(link);
 						head.parent.actionList.push(head.action);
 						head.parent.actionDict[head.action] = [];
 						head.parent.actionDict[head.action].push(childObject);
@@ -114,9 +134,19 @@ var compareGraph = {
 					ccsObject.actionList = [];
 					ccsObject.actionDict = [];
 					if(head.parent.actionDict[head.action]) {
+						var link = {};
+						link.source = head.parent.id;
+						link.target = ccsObject.id;
+						link.action = head.action;
+						links.push(link);
 						head.parent.actionDict[head.action].push(ccsObject);
 					}
 					else {
+						var link = {};
+						link.source = head.parent.id;
+						link.target = ccsObject.id;
+						link.action = head.action;
+						links.push(link);
 						head.parent.actionList.push(head.action);
 						head.parent.actionDict[head.action] = [];
 						head.parent.actionDict[head.action].push(ccsObject);
@@ -159,7 +189,7 @@ var compareGraph = {
 				}
 			}
 		}
-		return newRoot;
+		return {Root: newRoot, links: links};
 	},
 	/*_simplifiedGraph: function () {
 
@@ -515,6 +545,11 @@ var compareGraph = {
 			}
 		}
 		return new_id;
+	},
+	letStateGraphDrawNoTauLinks: function(Dfd1Links, Dfd2Links) {
+		var self = this;
+		stateGraph1.drawNoTauLinksInOverview(Dfd1Links);
+		stateGraph2.drawNoTauLinksInOverview(Dfd2Links);
 	},
 	mouseoverCircle: function (n) {
 		var self = this;

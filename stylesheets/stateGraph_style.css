@@ -69,6 +69,12 @@ body {
 .BufferLine {
 	opacity: 0.15 !important;
 }
+.NoTauLinks {
+	stroke: gray;
+    fill: gray;
+    stroke-width: 1;
+    opacity: 0.9;
+}
 .normalNode {
 	stroke: steelblue;
 	stroke-width: 1;

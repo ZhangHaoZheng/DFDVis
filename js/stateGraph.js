@@ -30,6 +30,7 @@ var stateGraph = {
 	_circlesOverviewPrefix: "overview-circle-",
 	_linesRootOverviewPrefix: "overview-root-line-",
 	_linesPastOverviewPrefix: "overview-past-line-",
+	noTauLinesPrefix: "overview-noTau-line-",
 	_ifActionTextVisible: true,
 	_ifRouteFromRootVisivle: true,
 	_ifRouteFromPastVisible: true,
@@ -1582,6 +1583,44 @@ var stateGraph = {
 			.attr("y1", 0)
 			.attr("x2", width)
 			.attr("y2", height);
+	},
+	drawNoTauLinksInOverview: function(links) {
+		var self = this;
+		var diagonal = d3.svg.diagonal();
+		var Lines = self._stateGraph_overview_g.selectAll(".NoTauLinks")
+			.data(links);
+		Lines.enter()
+			.append("path")
+			.attr("id", function(l) {
+				return self.noTauLinesPrefix 
+					+ self._fixTheSelectProblem(l.source + "To" + l.target);
+			})
+			.attr("class", "NoTauLinks")
+			.attr("action", function(l) {
+				return l.action;
+			})
+			.attr("d", computeWidthOfNoTauLineInOverview);
+
+		function computeWidthOfNoTauLineInOverview (l_id) {
+			var l = {};
+			l.source = self._idToNode[l_id.source];
+			l.target = self._idToNode[l_id.target];
+			var line_source = {x: l.source.overview_x, y: l.source.overview_y};
+			var line_target = {x: l.target.overview_x, y: l.target.overview_y};
+			var line2_source = line_target;
+			var line2_target = {x: l.source.overview_x, y: l.source.overview_y};
+			var tmp_x = line_target.x - line_source.x;
+			var tmp_y = line_target.y - line_source.y;
+			var tmp_m = Math.sqrt(tmp_y * tmp_y + tmp_x * tmp_x);
+			line_source.x -= tmp_y * 2 / tmp_m;
+			line_source.y += tmp_x * 2 / tmp_m;
+			line2_target.x += tmp_y * 2 / tmp_m;
+			line2_target.y -= tmp_x * 2 / tmp_m;
+			var d1 = diagonal({source: line_source, target: line_target});
+			var d2 = diagonal({source: line2_source, target: line2_target});
+			var final = d1 + d2.substring(d2.indexOf('C')) + 'Z';
+			return final;
+		}
 	},
 	clear: function() {
 		var self = this;
