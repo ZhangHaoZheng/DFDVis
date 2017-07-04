@@ -5,6 +5,7 @@ var compareGraph = {
 	newDfd2Root: undefined,
 	mergedRoot: undefined,
 	mergedDict: undefined,
+	dictCircle: undefined,
 	links: undefined,
 	Dfd1Links: undefined,
 	Dfd2Links: undefined,
@@ -28,6 +29,7 @@ var compareGraph = {
 		var tmpMergedObject;
 		var tmpBlock1Object;
 		var tmpBlock2Object;
+		var tmpLinksObject;
 		if(self.dfd1Root === undefined || self.dfd2Root === undefined) {
 			return null;
 		}
@@ -43,19 +45,19 @@ var compareGraph = {
 		self.newDfd2Root = tmpDfd2Object.Root;
 		self.Dfd1Links = tmpDfd1Object.links;
 		self.Dfd2Links = tmpDfd2Object.links;
-		console.log(self.newDfd1Root)
-		console.log(self.newDfd2Root)
 		tmpMergedObject = self._constructMergedGraph(self.newDfd1Root, self.newDfd2Root);
 		self.mergedRoot = tmpMergedObject.root;
 		self.mergedDict = tmpMergedObject.dict;
-		self.links = self._constructLinks(self.mergedRoot);
+		tmpLinksObject = self._constructLinks(self.mergedRoot);
+		self.links = tmpLinksObject.links;
+		self.dictCircle = tmpLinksObject.dict;
 		tmpBlock1Object = self._constructBlocks(self.newDfd1Root);
 		tmpBlock2Object = self._constructBlocks(self.newDfd2Root);
 		self.blocks1 = tmpBlock1Object.blocks;
 		self.blocks1Dict = tmpBlock1Object.blocksDict;
 		self.blocks2 = tmpBlock2Object.blocks;
 		self.blocks2Dict = tmpBlock2Object.blocksDict;
-		self.matrix = self._constructMatrix(self.blocks1, self.blocks2, self.mergedDict);
+		self.matrix = self._constructMatrix(self.blocks1, self.blocks2, self.mergedDict, self.dictCircle);
 		retract();//缩进页面
 		self._renderView(
 			self.compareGraphDivID,
@@ -245,7 +247,8 @@ var compareGraph = {
 					}
 				}
 				else {
-					mergedObject.commonActionDict[action].count = 0;
+					mergedObject.ifStop = true;
+					mergedObject.commonActionDict[action].count = -1;
 					mergedObject.commonActionDict[action].developList = [];
 					mark = true;
 				}
@@ -313,10 +316,15 @@ var compareGraph = {
 		var links = [];
 		var queue = [];
 		var ifVisited = [];
+		var dictForCircle = [];
 		queue.push(mergedRoot);
 		ifVisited[mergedRoot.id] = true;
 		while(queue.length != 0) {
 			var head = queue.shift();
+			if(head.ifStop === true) {
+				dictForCircle[head.id] = {class: " stopPoint"};
+				continue;
+			}
 			for(var i = 0; i < head.commonActionList.length; i++) {
 				var action = head.commonActionList[i];
 				var nextList = head.commonActionDict[action].developList;
@@ -332,6 +340,22 @@ var compareGraph = {
 						link.class = " minorLine";
 					}
 					links.push(link);
+					if(!dictForCircle[link.source.id]) {
+						if(link.source.ifBalance === 1) {
+							dictForCircle[link.source.id] = {class: " BalancedCircle"};
+						}
+						else {
+							dictForCircle[link.source.id] = {class: " unBalancedCircle"};
+						}
+					}
+					if(!dictForCircle[link.target.id]) {
+						if(link.target.ifBalance === 1) {
+							dictForCircle[link.target.id] = {class: " BalancedCircle"};
+						}
+						else {
+							dictForCircle[link.target.id] = {class: " unBalancedCircle"};
+						}
+					}
 					if(ifVisited[link.target.id] != true) {
 						ifVisited[link.target.id] = true;
 						queue.push(link.target);
@@ -339,7 +363,7 @@ var compareGraph = {
 				}
 			}
 		}
-		return links;
+		return {links: links, dict: dictForCircle};
 	},
 	_constructBlocks: function (Root) {
 		var self = this;
@@ -367,7 +391,7 @@ var compareGraph = {
 		}
 		return {blocks: blocks, blocksDict: blocksDict};
 	},
-	_constructMatrix: function (blocks1, blocks2, mergedDict) {
+	_constructMatrix: function (blocks1, blocks2, mergedDict, dictCircle) {
 		var self = this;
 		var matrix = [];
 		matrix.length = blocks2.length + 1;
@@ -391,14 +415,15 @@ var compareGraph = {
 			for(var j = 1; j < matrix[i].length; j++) {
 				var mergedID = matrix[0][j].node.id + "To" + matrix[i][0].node.id;
 				matrix[i][j] = {};
-				if(mergedDict[mergedID]) {
+				if(dictCircle[mergedID]) {
 					matrix[i][j].type = "circle";
-					if(mergedDict[mergedID].ifBalance === 1) {
+					/*if(dictCircle[mergedID].ifBalance === 1) {
 						matrix[i][j].class = " BalancedCircle";
 					}
-					else {
+					else if{
 						matrix[i][j].class = " unBalancedCircle";
-					}
+					}*/
+					matrix[i][j].class = dictCircle[mergedID].class;
 					matrix[i][j].id = mergedID;
 					matrix[i][j].CCSid1 = mergedDict[mergedID].CCSid1;
 					matrix[i][j].CCSid2 = mergedDict[mergedID].CCSid2;
@@ -548,8 +573,8 @@ var compareGraph = {
 	},
 	letStateGraphDrawNoTauLinks: function(Dfd1Links, Dfd2Links) {
 		var self = this;
-		stateGraph1.drawNoTauLinksInOverview(Dfd1Links);
-		stateGraph2.drawNoTauLinksInOverview(Dfd2Links);
+	//	stateGraph1.drawNoTauLinksInOverview(Dfd1Links);
+	//	stateGraph2.drawNoTauLinksInOverview(Dfd2Links);
 	},
 	mouseoverCircle: function (n) {
 		var self = this;

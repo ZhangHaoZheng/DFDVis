@@ -24,6 +24,9 @@
 .unBalancedCircle {
 	stroke: #AE0000 !important;
 }
+.stopPoint {
+	stroke: #2F0000 !important;
+}
 .compareLine {
 	stroke: gray;
 	fill: gray;
