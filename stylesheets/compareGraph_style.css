@@ -38,3 +38,27 @@
 .minorLine {
 	opacity: 0.6;
 }
+.compareGraphToolbarDiv {
+	float: left;
+	width: 5%;
+	height: 100%;
+}
+.compareGraphDiv {
+	float: right;
+	width: 95%;
+	height: 100%;
+}
+.compareGraphOverviewDiv {
+	float: right;
+	width: 50%;
+	height: 100%;
+}
+.compareGraphDetailDiv {
+	float: left;
+	width: 50%;
+	height: 100%;
+}
+.fullSvg {
+	width: 100%;
+	height: 100%;
+}

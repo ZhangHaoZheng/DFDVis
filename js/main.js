@@ -26,7 +26,7 @@ function SendDfdObjToServer(dfdObj, dfdIndex) {
                     stateGraph2.initialize("stateGraph2", data, processGraph2);
                     compareGraph.addStateGraph(stateGraph2.rootNode, 2);
                 }
-                compareGraph.initialize("comparisondiv", "comparison-svg");
+                compareGraph.initialize("comparisondiv");
             }
             else {
                 if(dfdIndex === 1) {
@@ -106,9 +106,9 @@ $(document).ready(function() {
     rightWrapper.append("div")
         .attr("id", "furtherStateGraph2-right-div");
     //comparisondiv
-    d3.select("#comparisondiv")
+    /*d3.select("#comparisondiv")
         .append("svg")
-        .attr("id", "comparison-svg");
+        .attr("id", "comparison-svg");*/
     //手风琴效果的控制
     var currentDivDisplayed = 2;
     $("#accordion-element-1").on('show.bs.collapse', function() {

@@ -106,6 +106,8 @@ var stateGraph = {
 		idpath[self.rootNode.id] = true;
 		self.maxDepth = 0;
 		self.rootNode.maxdepth = 0;
+		console.log(self.rootNode);
+		console.log(self._idToNode);
 		_calculateMaxDepthForNodes(self.rootNode, idpath, 1);
 		for(var i = 0; i < self.maxDepth + 1; i++) {
 			self._nodeOfminDepth[i] = [];
@@ -120,7 +122,6 @@ var stateGraph = {
 			var formalDef = output.result[0][l1 - 1].formalDef;
 			var nodeName = output.result[0][l1 - 1].nodeName;
 			formalDef = formalDef.substring(0, formalDef.indexOf(')') + 1);
-			console.log(formalDef);
 			for(var id in graph) {
 				if(id.substring(0, id.indexOf(')') + 1) == formalDef) {
 					ifDifferent = true;
@@ -275,17 +276,12 @@ var stateGraph = {
 		var transitionMark; //作图时标记动画延迟时间
 		var overviewRootShortest = [];
 		var overviewPastShortest = [];
-		console.log("_selectNodesToShow")
 		_selectNodesToShow();
-		console.log("_computeNodesPosition")
 		_computeNodesPosition();
 		x_linear_detail.domain([smallest_x, largest_x]);
 		y_linear_detail.domain([smallest_y, largest_y]);
-		console.log("_drawRoute")
 		_drawRoute();	
-		console.log("_drawStateGraphDetail")
 		_drawStateGraphDetail();
-		console.log("_drawStateGraphOverview")
 		_drawStateGraphOverview();
 		
 
@@ -770,7 +766,6 @@ var stateGraph = {
 		}
 		function _drawStateGraphOverview() {
 			//作图overview
-			console.log(self._overview_nodes)
 			var circles = self._stateGraph_overview_g.selectAll(".circle")
 				.data(self._overview_nodes, function(n) {
 					return n.id;
@@ -890,7 +885,6 @@ var stateGraph = {
 				self.fromPastShortest = _findShortestRoute(self._idToNode[self.nodePast], node_id);
 			}
 			//改变processGraph中的样式
-			console.log(node_id, self.nodePast, self.nodeNow)
 			if(ifProcessGraph === false) {
 				//nothing
 			}
@@ -1141,7 +1135,6 @@ var stateGraph = {
 			/ self._maxWidth - 1) / 2;
 		var y_r = (($("#" + self.stateGraphOverviewDivid).height() - 2 * self._border)
 			/ self._maxMinDepth - 1) / 2;
-		console.log(x_r, y_r);
 		if(x_r > y_r) {
 			r = y_r;
 		}
