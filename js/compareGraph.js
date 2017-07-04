@@ -225,6 +225,8 @@ var compareGraph = {
 				var devList1 = node1.actionDict[mergedObject.commonActionList[i]];
 				var devList2 = node2.actionDict[mergedObject.commonActionList[i]];
 				var nodes = searchBalancedActionsNodes(devList1, devList2);
+				var list1ToCheck = [];
+				var list2ToCheck = [];
 				if(nodes != false) {
 					for(var j = 0; j < nodes.length; j++) {
 						mergedObject.commonActionDict[action].count++;
@@ -236,11 +238,19 @@ var compareGraph = {
 							if(tmp.ifBalance === 0) {
 								mergedObject.commonActionDict[action].count--;
 							}
+							else {
+								list1ToCheck[nextNode1.id] = true;
+								list2ToCheck[nextNode2.id] = true;
+							}
 						}
 						else {
 							var nextMergedObject = mergeRecursively(nextNode1, nextNode2);
 							if(nextMergedObject.ifBalance === 0) {
 								mergedObject.commonActionDict[action].count--;
+							}
+							else {
+								list1ToCheck[nextNode1.id] = true;
+								list2ToCheck[nextNode2.id] = true;
 							}
 							mergedObject.commonActionDict[action].developList.push(nextMergedObject);
 						}
@@ -251,9 +261,22 @@ var compareGraph = {
 					mergedObject.commonActionDict[action].count = -1;
 					mergedObject.commonActionDict[action].developList = [];
 					mark = true;
+					break;
 				}
-				if(mergedObject.commonActionDict[action].count === 0) {
+				/*if(mergedObject.commonActionDict[action].count === 0) {
 					mark = true;
+				}*/
+				for(var x = 0; x < devList1.length; x++) {
+					if(list1ToCheck[devList1[x].id] != true) {
+						mark = true;
+						break;
+					}
+				}
+				for(var x = 0; x < devList2.length; x++) {
+					if(list2ToCheck[devList2[x].id] != true) {
+						mark = true;
+						break;
+					}
 				}
 			}
 			if(mark === true) {
