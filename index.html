@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="stylesheets/mine.css">
     <link rel="stylesheet" href="stylesheets/stateGraph_style.css">
     <link rel="stylesheet" href="stylesheets/processGraph_style.css">
+    <link rel="stylesheet" href="stylesheets/compareGraph_style.css">
+    <link rel="stylesheet" href="stylesheets/main.css">
     <!--******************************-->
     <script src="js/jquery/jquery-3.1.1.min.js"></script>
     <script src="js/jquery-ui/jquery-ui.min.js"></script>
@@ -21,6 +23,7 @@
     <script src="js/initflowchart.js"></script>
     <script src="js/stateGraph.js"></script>
     <script src="js/processGraph.js"></script>
+    <script src="js/compareGraph.js"></script>
     <!--init begin-->
     <script src="js/main.js"></script>
 </head>
@@ -51,52 +54,60 @@
         </div>
         <!--流图栏-->
         <div class="row-fluid" id="main-content-div">
-            <div class="span6">
-                <div class="row-fluid" id="btn-row">
-                    <div class="btn-group">
-                        <button id="btn-new1" class="btn" type="button">1#New<em class="icon-align-left"></em></button>
-                        <button id="btn-new2" class="btn" type="button">2#New<em class="icon-align-right"></em></button>
+            <div class="span5" id="main-left">
+                <div id="left-span6-left">
+                    <div class="row-fluid" id="btn-row">
+                        <div class="btn-group">
+                            <button id="btn-new1" class="btn" type="button">1#New<em class="icon-align-left"></em></button>
+                            <button id="btn-new2" class="btn" type="button">2#New<em class="icon-align-right"></em></button>
+                        </div>
+                        <div class="btn-group">
+                            <button id="btn-OO" class="btn" type="button" id="btn-oo">OO<em class="icon-align-left"></em></button>
+                            <button id="btn-OM" class="btn" type="button" id="btn-om">OM<em class="icon-align-center"></em></button>
+                            <button id="btn-MO" class="btn" type="button" id="btn-mo">MO<em class="icon-align-right"></em></button>
+                        </div>
+                        <div class="btn-group">
+                            <button id="btn-delete" class="btn" type="button">Del</button>
+                        </div>
+                        <div class="btn-group" id="btng-4">
+                            <button id="btn-submit" class="btn" type="button">Submit</button>
+                        </div>
                     </div>
-                    <div class="btn-group">
-                        <button id="btn-OO" class="btn" type="button" id="btn-oo">OO<em class="icon-align-left"></em></button>
-                        <button id="btn-OM" class="btn" type="button" id="btn-om">OM<em class="icon-align-center"></em></button>
-                        <button id="btn-MO" class="btn" type="button" id="btn-mo">MO<em class="icon-align-right"></em></button>
-                    </div>
-                    <div class="btn-group">
-                        <button id="btn-delete" class="btn" type="button">Del</button>
-                    </div>
-                    <div class="btn-group" id="btng-4">
-                        <button id="btn-submit" class="btn" type="button">Submit</button>
+                    <div class="accordion" id="dfddiv">
+                        <div class="accordion-group">
+                            <div class="accordion-heading">
+                                <span class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" href="#accordion-element-1">1#DFD</span>
+                            </div>
+                            <div id="accordion-element-1" class="accordion-body in">
+                                <div class="accordion-inner flowchart-example-container" id="flowchartdiv1">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-group">
+                            <div class="accordion-heading">
+                                <span class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" href="#accordion-element-2">2#DFD</span>
+                            </div>
+                            <div id="accordion-element-2" class="accordion-body in">
+                                <div class="accordion-inner flowchart-example-container" id="flowchartdiv2">
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="accordion" id="dfddiv">
-                    <div class="accordion-group">
-                        <div class="accordion-heading">
-                            <span class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" href="#accordion-element-1">1#DFD</span>
-                        </div>
-                        <div id="accordion-element-1" class="accordion-body in">
-                            <div class="accordion-inner flowchart-example-container" id="flowchartdiv1">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="accordion-group">
-                        <div class="accordion-heading">
-                            <span class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" href="#accordion-element-2">2#DFD</span>
-                        </div>
-                        <div id="accordion-element-2" class="accordion-body in">
-                            <div class="accordion-inner flowchart-example-container" id="flowchartdiv2">
-                            </div>
-                        </div>
-                    </div>
+                <div id="left-span6-right">
+                     <button id="btn-retract" class="btn" type="button" id="btn-retract" ifRetract="false"><em class="icon-align-center" id="btn-retract-em"><<</em></button>
                 </div>
             </div>
             <!-- 右侧部分 -->
-            <div class="span6">
+            <div class="span7" id="main-right">
                 <div class="two-state-view" id="statediv">
-                    <div class="accordion-group" id="stateGraph">
+                    <div class="accordion-group" id="mergeStateGraph1">
                     </div>
-                    <div class="accordion-group" id="furtherStateGraph">
+                    <div class="accordion-group" id="mergeStateGraph2">
                     </div>
+                </div>
+                <div class="comparison-view" id="comparisondiv">
+                    
                 </div>
             </div>
         </div>

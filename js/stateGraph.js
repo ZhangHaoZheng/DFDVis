@@ -1,12 +1,13 @@
-var rootNode;
-var maxDepth;//实节点的最大深度
-var output;
 var stateGraph = {
+	rootNode: undefined,
+	maxDepth: undefined,//实节点的最大深度
+	output: undefined,
+	processGraphObject: undefined,
 	numOfParentLevel: 2,
 	numOfChildrenLevel: 3,
 	stateGraphDivID: undefined,
-	stateGraphDetailDivId: "stateGraph-detail",
-	stateGraphOverviewDivid: "stateGraph-overview",
+	stateGraphDetailDivId: undefined,
+	stateGraphOverviewDivid: undefined,
 	nodeNow: undefined,
 	nodePast: undefined,
 	nodesNow: undefined,
@@ -29,6 +30,7 @@ var stateGraph = {
 	_circlesOverviewPrefix: "overview-circle-",
 	_linesRootOverviewPrefix: "overview-root-line-",
 	_linesPastOverviewPrefix: "overview-past-line-",
+	noTauLinesPrefix: "overview-noTau-line-",
 	_ifActionTextVisible: true,
 	_ifRouteFromRootVisivle: true,
 	_ifRouteFromPastVisible: true,
@@ -37,9 +39,13 @@ var stateGraph = {
 	_maxWidth: 0, //_nodeOfminDepth二维数组的最大宽度
 	_overview_r: 0, //overview中节点半径
 	_tip: d3.tip().attr("class", "d3-tip"),
-	initialize: function(div_id) {
+	initialize: function(div_id, output, processGraphObject) {
 		var self = this;
 		self.stateGraphDivID = div_id;
+		self.stateGraphDetailDivId = div_id + "-detail";
+		self.stateGraphOverviewDivid = div_id + "-overview";
+		self.output = output;
+		self.processGraphObject = processGraphObject;
 		_initailizeTheVariables();
 		d3.select("#" + div_id)
 			.selectAll("div").remove();
@@ -63,7 +69,7 @@ var stateGraph = {
 		self._stateGraph_overview_g = self._stateGraph_overview_svg.append("g")
 			.attr("transform", "translate(" + self._leftOverviewInterval + "," + self._border + ")");
 		self._stateGraph_detail_g.call(self._tip);
-		
+		self._drawDepartLine();
 		_zoom();
 		self._translateToGraph(output);
 		self._addButton();
@@ -97,11 +103,11 @@ var stateGraph = {
 		var self = this;
 		_translate();
 		var idpath = [];
-		idpath[rootNode.id] = true;
-		maxDepth = 0;
-		rootNode.maxdepth = 0;
-		_calculateMaxDepthForNodes(rootNode, idpath, 1);
-		for(var i = 0; i < maxDepth + 1; i++) {
+		idpath[self.rootNode.id] = true;
+		self.maxDepth = 0;
+		self.rootNode.maxdepth = 0;
+		_calculateMaxDepthForNodes(self.rootNode, idpath, 1);
+		for(var i = 0; i < self.maxDepth + 1; i++) {
 			self._nodeOfminDepth[i] = [];
 		}
 		_calculateMinDepthForNodes();
@@ -183,13 +189,13 @@ var stateGraph = {
 						self._idToNode[dfdToDelete[i].id].out.splice(dfdToDelete[i].index, 1);
 					}
 				}
-				rootNode = self._idToNode[formalDef];
+				self.rootNode = self._idToNode[formalDef];
 			}
 			else {
 				var completeFormalDef = output.result[0][l1 - 1].formalDef;
 				self._idToNode[nodeName].id = completeFormalDef;
 				self._idToNode[completeFormalDef] = self._idToNode[nodeName];
-				rootNode = self._idToNode[completeFormalDef];
+				self.rootNode = self._idToNode[completeFormalDef];
 			}
 		}
 		function _calculateMaxDepthForNodes(node, idpath, length) {
@@ -202,8 +208,8 @@ var stateGraph = {
 				}
 				if((out_n.maxdepth == undefined) || (out_n.maxdepth < length)) {
 					out_n.maxdepth = length;
-					if(maxDepth < length) {
-						maxDepth = length;
+					if(self.maxDepth < length) {
+						self.maxDepth = length;
 					}
 					var tmp = [];
 					tmp[out_n.id] = true;
@@ -215,10 +221,10 @@ var stateGraph = {
 			//为每个节点计算mindepth，广搜
 			var queue = [];
 			var ifPushed = [];
-			queue.push(rootNode);
-			rootNode.mindepth = 0;
-			ifPushed[rootNode.id] = true;
-			self._nodeOfminDepth[0].push(rootNode.id);
+			queue.push(self.rootNode);
+			self.rootNode.mindepth = 0;
+			ifPushed[self.rootNode.id] = true;
+			self._nodeOfminDepth[0].push(self.rootNode.id);
 			while(queue.length != 0) {
 				var n = queue.shift();
 				var l = n.out.length;
@@ -607,7 +613,7 @@ var stateGraph = {
 							+ self._fixTheSelectProblem(l.id))
 							.classed("focus-highlight", true);
 					self._mouseoverLink(this);
-					processGraph.mouseoverLinkFromStateGraph(l.action);
+					self.processGraphObject.mouseoverLinkFromStateGraph(l.action);
 				})
 				.on("mouseout", function(l) {
 					self._stateGraph_overview_g.select("#" 
@@ -620,7 +626,7 @@ var stateGraph = {
 							.classed("focus-highlight", false);
 					d3.select(this).classed("focus-highlight", false);
 					self._mouseoutLink(this);
-					processGraph.mouseoutLinkFromStateGraph(l.action);
+					self.processGraphObject.mouseoutLinkFromStateGraph(l.action);
 				})
 				.transition()
 				.delay(function() {
@@ -646,16 +652,12 @@ var stateGraph = {
 					_nodeClick(n);
 				})
 				.on("mouseover", function(n) {
-					d3.select(this).classed("focus-highlight", true);
-					self._stateGraph_overview_g.select("#" + self._circlesOverviewPrefix + self._fixTheSelectProblem(n.id))
-						.classed("focus-highlight", true);
-					self._mouseoverNode(n.id);
+					self.mouseoverNode(n.id);
+					compareGraph.mouseoverNodeFromStateGraph(n.id);
 				})
 				.on("mouseout", function(n) {
-					d3.select(this).classed("focus-highlight", false);
-					self._stateGraph_overview_g.select("#" + self._circlesOverviewPrefix + self._fixTheSelectProblem(n.id))
-						.classed("focus-highlight", false);
-					self._mouseoutNode(n.id);
+					self.mouseoutNode(n.id);
+					compareGraph.mouseoutNodeFromStateGraph(n.id);
 				})
 				.transition()
 				.delay(function() {
@@ -811,16 +813,12 @@ var stateGraph = {
 					_nodeClick(n);
 				})
 				.on("mouseover", function(n) {
-					d3.select(this).classed("focus-highlight", true);
-					self._stateGraph_detail_g.select("#" + self._circlesPrefix + self._fixTheSelectProblem(n.id))
-						.classed("focus-highlight", true);
-					self._mouseoverNode(n.id);
+					self.mouseoverNode(n.id);
+					compareGraph.mouseoverNodeFromStateGraph(n.id);
 				})
 				.on("mouseout", function(n) {
-					d3.select(this).classed("focus-highlight", false);
-					self._stateGraph_detail_g.select("#" + self._circlesPrefix + self._fixTheSelectProblem(n.id))
-						.classed("focus-highlight", false);
-					self._mouseoutNode(n.id);
+					self.mouseoutNode(n.id);
+					compareGraph.mouseoutNodeFromStateGraph(n.id);
 				});
 			circles.transition()
 				.delay(function(n) {
@@ -885,10 +883,10 @@ var stateGraph = {
 			}
 			self.fromRootShortest = [];
 			self.fromPastShortest = [];
-			if(node_id != rootNode.id) {
-				self.fromRootShortest = _findShortestRoute(rootNode, node_id);
+			if(node_id != self.rootNode.id) {
+				self.fromRootShortest = _findShortestRoute(self.rootNode, node_id);
 			}
-			if(self.nodePast != rootNode.id) {
+			if(self.nodePast != self.rootNode.id) {
 				self.fromPastShortest = _findShortestRoute(self._idToNode[self.nodePast], node_id);
 			}
 			//改变processGraph中的样式
@@ -896,34 +894,34 @@ var stateGraph = {
 			if(ifProcessGraph === false) {
 				//nothing
 			}
-			else if(node_id == rootNode.id) {
-				processGraph.renderView(null);
+			else if(node_id == self.rootNode.id) {
+				self.processGraphObject.renderView(null);
 			}
 			else {
 				var actionList = [];
 				for(var i = 0; i < self.fromRootShortest.length; i++) {
 					actionList.push(self.fromRootShortest[i].action);
 				}
-				processGraph.renderView(actionList);
+				self.processGraphObject.renderView(actionList);
 			}
 			//关于processGraph中的动画
 			if(ifProcessGraph === false) {
 				//nothing
 			}
-			else if(self.nodePast == rootNode.id) {
+			else if(self.nodePast == self.rootNode.id) {
 				/*var actionList = [];
 				for(var i = 0; i < self.fromRootShortest.length; i++) {
 					actionList.push(self.fromRootShortest[i].action);
 				}
-				processGraph.setActionListFromPast(actionList);*/
-				processGraph.setActionListFromPast([]);
+				self.processGraphObject.setActionListFromPast(actionList);*/
+				self.processGraphObject.setActionListFromPast([]);
 			}
 			else {
 				var actionList = [];
 				for(var i = 0; i < self.fromPastShortest.length; i++) {
 					actionList.push(self.fromPastShortest[i].action);
 				}
-				processGraph.setActionListFromPast(actionList);
+				self.processGraphObject.setActionListFromPast(actionList);
 			}
 			_drawLines(self.fromRootShortest, "overviewRootLine", self._linesRootOverviewPrefix);
 			_drawLines(self.fromPastShortest, "overviewPastLine", self._linesPastOverviewPrefix);
@@ -990,7 +988,7 @@ var stateGraph = {
 					line.id = line.source.id + line.target.id;
 					lines.push(line);
 					tmp_tmp_n = tmp_tmp_n.backPointer;
-					if(source.id == rootNode.id) {
+					if(source.id == self.rootNode.id) {
 						overviewRootShortest[line.id] = true;
 					}
 					else if(source.id == self.nodePast) {
@@ -1026,7 +1024,7 @@ var stateGraph = {
 								line.id = line.source.id + line.target.id;
 								lines.push(line);
 								tmp_tmp_n = tmp_tmp_n.backPointer;
-								if(source.id == rootNode.id) {
+								if(source.id == self.rootNode.id) {
 									overviewRootShortest[line.id] = true;
 								}
 								else if(source.id == self.nodePast) {
@@ -1089,7 +1087,7 @@ var stateGraph = {
 							+ self._fixTheSelectProblem(l.id))
 							.classed("focus-highlight", true);
 						self._mouseoverLink(this);
-						processGraph.mouseoverLinkFromStateGraph(l.action);
+						self.processGraphObject.mouseoverLinkFromStateGraph(l.action);
 					})
 					.on("mouseout", function(l) {
 						self._stateGraph_detail_g.select("#" 
@@ -1105,7 +1103,7 @@ var stateGraph = {
 							+ self._fixTheSelectProblem(l.id))
 							.classed("focus-highlight", false);
 						self._mouseoutLink(this);
-						processGraph.mouseoutLinkFromStateGraph(l.action);
+						self.processGraphObject.mouseoutLinkFromStateGraph(l.action);
 					})
 			}
 			function _setRouteVisibleOrNotInOverview() {
@@ -1204,7 +1202,7 @@ var stateGraph = {
 		//按钮部分
 		var toolBarDiv = d3.select("#" + self.stateGraphDivID)
 			.append("div")
-			.attr("id", "stateGraph-toolBarDiv");
+			.attr("id", self.stateGraphDivID + "-toolBarDiv");
 		//帮助按钮
 		/*toolBarDiv.append("span")
 			.attr("id", "stateGraph_help")
@@ -1406,25 +1404,37 @@ var stateGraph = {
 		}
 		return undefined;
 	},
-	_mouseoverNode: function(node_id) {
+	mouseoverNode: function(node_id, already_tip) {
 		//鼠标悬浮节点事件
 		var self = this;
 		var n = self._idToNode[node_id];
-		self._tip.html(function() {
-			return "<b>CCS definition: </b><font color=\"#FF6347\">" 
-				+ n.id 
-				+ "</font><br><b>the minimum actions from the initial state: </b><font color=\"#FF6347\">"
-				+ n.mindepth 
-				+ "</font>   <b>maximum actions: </b><font color=\"#FF6347\">" 
-				+ n.maxdepth 
-				+ "</font>";
-		});
-		self._tip.show();
+		self._stateGraph_overview_g.select("#" + self._circlesOverviewPrefix + self._fixTheSelectProblem(node_id))
+						.classed("focus-highlight", true);
+		self._stateGraph_detail_g.select("#" + self._circlesPrefix + self._fixTheSelectProblem(node_id))
+						.classed("focus-highlight", true);
+		if(!already_tip) {
+			self._tip.html(function() {
+				return "<b>CCS definition: </b><font color=\"#FF6347\">" 
+					+ n.id 
+					+ "</font><br><b>the minimum actions from the initial state: </b><font color=\"#FF6347\">"
+					+ n.mindepth 
+					+ "</font>   <b>maximum actions: </b><font color=\"#FF6347\">" 
+					+ n.maxdepth 
+					+ "</font>";
+			});
+			self._tip.show();
+		}
 	},
-	_mouseoutNode: function(node_id) {
+	mouseoutNode: function(node_id, already_tip) {
 		//鼠标移开事件
 		var self = this;
-		self._tip.hide();
+		self._stateGraph_overview_g.select("#" + self._circlesOverviewPrefix + self._fixTheSelectProblem(node_id))
+						.classed("focus-highlight", false);
+		self._stateGraph_detail_g.select("#" + self._circlesPrefix + self._fixTheSelectProblem(node_id))
+						.classed("focus-highlight", false);
+		if(!already_tip) {
+			self._tip.hide();
+		}
 	},
 	_mouseoverLink: function(l) {
 		//鼠标悬浮边事件
@@ -1443,12 +1453,14 @@ var stateGraph = {
 	},
 	hideText: function() {
 		//隐藏action避免过于凌乱
-		d3.selectAll(".action")
+		var self = this;
+		self._stateGraph_detail_g.selectAll(".action")
 			.classed("action-hidden", true);
 	},
 	showText: function() {
 		//显示action
-		d3.selectAll(".action")
+		var self = this;
+		self._stateGraph_detail_g.selectAll(".action")
 			.classed("action-hidden", false);
 	},
 	addUpperLevelToShow: function() {
@@ -1495,10 +1507,10 @@ var stateGraph = {
 			/*detailLineID = self._linesPrefix
 				+ self._fixTheSelectProblem(self.fromPastShortest[index].id);*/
 		}
-		var overviewLineObject = d3.select("#" + overviewLineID);
+		var overviewLineObject = self._stateGraph_overview_g.select("#" + overviewLineID);
 		//var detailLineObject = d3.select("#" + detailLineID);
 		var oldOverviewClass = overviewLineObject.attr("class");
-		d3.select("#" + overviewLineID)
+		self._stateGraph_overview_g.select("#" + overviewLineID)
 			.transition()
 			.delay(delay)
 			.duration(duration)
@@ -1554,5 +1566,69 @@ var stateGraph = {
 			.classed("fullBufferNode", false);
 		self._stateGraph_overview_g.selectAll(".circle")
 			.classed("emptyBufferNode", false);
+	},
+	_drawDepartLine: function() {
+		var self = this;
+		var height = $("#" + self.stateGraphOverviewDivid).height();
+		var width = $("#" + self.stateGraphOverviewDivid).width();
+		self._stateGraph_overview_svg.append("line")
+			.attr("class", "dash-segmentation-Line")
+			.attr("x1", 0)
+			.attr("y1", 0)
+			.attr("x2", 0)
+			.attr("y2", height);
+		self._stateGraph_overview_svg.append("line")
+			.attr("class", "dash-segmentation-Line")
+			.attr("x1", width)
+			.attr("y1", 0)
+			.attr("x2", width)
+			.attr("y2", height);
+	},
+	drawNoTauLinksInOverview: function(links) {
+		var self = this;
+		var diagonal = d3.svg.diagonal();
+		var Lines = self._stateGraph_overview_g.selectAll(".NoTauLinks")
+			.data(links);
+		Lines.enter()
+			.append("path")
+			.attr("id", function(l) {
+				return self.noTauLinesPrefix 
+					+ self._fixTheSelectProblem(l.source + "To" + l.target);
+			})
+			.attr("class", "NoTauLinks")
+			.attr("action", function(l) {
+				return l.action;
+			})
+			.attr("d", computeWidthOfNoTauLineInOverview);
+
+		function computeWidthOfNoTauLineInOverview (l_id) {
+			var l = {};
+			l.source = self._idToNode[l_id.source];
+			l.target = self._idToNode[l_id.target];
+			var line_source = {x: l.source.overview_x, y: l.source.overview_y};
+			var line_target = {x: l.target.overview_x, y: l.target.overview_y};
+			var line2_source = line_target;
+			var line2_target = {x: l.source.overview_x, y: l.source.overview_y};
+			var tmp_x = line_target.x - line_source.x;
+			var tmp_y = line_target.y - line_source.y;
+			var tmp_m = Math.sqrt(tmp_y * tmp_y + tmp_x * tmp_x);
+			line_source.x -= tmp_y * 2 / tmp_m;
+			line_source.y += tmp_x * 2 / tmp_m;
+			line2_target.x += tmp_y * 2 / tmp_m;
+			line2_target.y -= tmp_x * 2 / tmp_m;
+			var d1 = diagonal({source: line_source, target: line_target});
+			var d2 = diagonal({source: line2_source, target: line2_target});
+			var final = d1 + d2.substring(d2.indexOf('C')) + 'Z';
+			return final;
+		}
+	},
+	clear: function() {
+		var self = this;
+		d3.select("#" + self.stateGraphDivID)
+			.selectAll("div")
+			.remove();
 	}
 }
+
+var stateGraph1 = Object.create(stateGraph);
+var stateGraph2 = Object.create(stateGraph);
