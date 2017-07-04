@@ -1,7 +1,8 @@
 var processGraph = {
-	processGraphToolDivID: "furtherStateGraph-left-wrapper",
-	processGraphSvgID: "furtherStateGraph-left-svg",
-	processGraphRightDivID: "furtherStateGraph-right-div",
+	stateGraphObject: undefined,
+	processGraphToolDivID: undefined,
+	processGraphSvgID: undefined,
+	processGraphRightDivID: undefined,
 	processGraphSvgG: undefined,
 	actionListFromPast: undefined,
 	actionListFromRoot: undefined,
@@ -16,9 +17,13 @@ var processGraph = {
 	_linesProcessPrefix: "process-line-",
 	_actionProcessPrefix: "process-action-",
 	_tip: d3.tip().attr("class", "d3-tip"),
-	initialize: function(dfdDefine) {
+	initialize: function(dfdDefine, processToolID, processSVGID, processRightID, stateObject) {
 		//初始化
 		var self = this;
+		self.processGraphToolDivID = processToolID;
+		self.processGraphSvgID = processSVGID;
+		self.processGraphRightDivID = processRightID;
+		self.stateGraphObject = stateObject;
 		console.log(dfdDefine);
 		initializeVariables();
 		if(self._ifAddedRightView === false) {
@@ -59,7 +64,7 @@ var processGraph = {
 			.text("Repetitions");
 		spanDiv = d3.select("#" + self.processGraphRightDivID)
 			.append("div")
-			.style("width", "65%")
+			.style("width", "80%")
 			.style("float", "right");
 		spanDiv.append("br");
 		spanDiv.append("div")
@@ -280,7 +285,7 @@ var processGraph = {
 			//计算坐标
 			var totalHeight = $("#"+self.processGraphSvgID).height();
 			var totalWidth = $("#"+self.processGraphSvgID).width() * 1.1;
-			var widthInterval = totalWidth / (nodeMatrix.length + 1);
+			var widthInterval = totalWidth / (nodeMatrix.length + 0.8);
 			for(var i = 0; i < nodeMatrix.length; i++) {
 				var l = nodeMatrix[i].length;
 				var heightInterval = totalHeight / (l + 1);
@@ -428,7 +433,7 @@ var processGraph = {
 				}
 				if(ifchanged === true) {
 					var tmpID = self._circlesProcessPrefix + self._IDtoLine[action].source.id;
-					d3.select("#" + tmpID)
+					self.processGraphSvgG.select("#" + tmpID)
 						.transition()
 						.delay(delay)
 						.duration(1000)
@@ -450,7 +455,7 @@ var processGraph = {
 					ifchanged = true;
 				}
 				if(ifchanged === true) {
-					d3.select("#" + self._linesProcessPrefix + action)
+					self.processGraphSvgG.select("#" + self._linesProcessPrefix + action)
 						.transition()
 						.delay(delay)
 						.duration(1000)
@@ -474,7 +479,7 @@ var processGraph = {
 				}
 				if(ifchanged === true) {
 					var tmpID = self._circlesProcessPrefix + self._IDtoLine[action].target.id;
-					d3.select("#" + tmpID)
+					self.processGraphSvgG.select("#" + tmpID)
 						.transition()
 						.delay(delay)
 						.duration(1000)
@@ -485,7 +490,7 @@ var processGraph = {
 					delay += 1000;
 				}
 				//同步
-				stateGraph.playAnimation(i, oldDelay, delay - oldDelay, ifFromPast);
+				self.stateGraphObject.playAnimation(i, oldDelay, delay - oldDelay, ifFromPast);
 			}
 		}
 	},
@@ -715,14 +720,16 @@ var processGraph = {
 		//鼠标悬浮边事件
 		var self = this;
 		if(lineID.substring(0, 5) != 'input' && lineID.substring(0, 6) != 'output') {
-			d3.select("#" + self._linesProcessPrefix + lineID).classed("focus-highlight", true);
+			self.processGraphSvgG.select("#" + self._linesProcessPrefix + lineID)
+				.classed("focus-highlight", true);
 		}
 	},
 	mouseoutLinkFromStateGraph: function(lineID) {
 		//鼠标移开事件
 		var self = this;
 		if(lineID.substring(0, 5) != 'input' && lineID.substring(0, 6) != 'output') {
-			d3.select("#" + self._linesProcessPrefix + lineID).classed("focus-highlight", false);
+			self.processGraphSvgG.select("#" + self._linesProcessPrefix + lineID)
+				.classed("focus-highlight", false);
 		}
 	},
 	mouseoverNode: function(n) {
@@ -734,10 +741,11 @@ var processGraph = {
 				actionListIndex[n.development[i][j]] = true;
 			}
 		}
-		stateGraph.outstandingFullBuffer(actionListIndex);
+		self.stateGraphObject.outstandingFullBuffer(actionListIndex);
 	},
 	mouseoutNode: function(n) {
-		stateGraph.restoreFullBuffer();
+		var self = this;
+		self.stateGraphObject.restoreFullBuffer();
 	},
 	_addButton: function() {
 		var self = this;
@@ -759,3 +767,6 @@ var processGraph = {
 			});
 	}
 }
+
+var processGraph1 = Object.create(processGraph);
+var processGraph2 = Object.create(processGraph);

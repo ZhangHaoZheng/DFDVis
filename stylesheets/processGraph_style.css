@@ -1,21 +1,41 @@
-#furtherStateGraph-left-wrapper {
+#furtherStateGraph1-left-wrapper {
 	height: 100%;
 	width: 5%;
 	float: left;
 }
-#furtherStateGraph-right-wrapper {
+#furtherStateGraph1-right-wrapper {
 	height: 100%;
 	width: 95%;
 	float: right;
 }
-#furtherStateGraph-left-div {
+#furtherStateGraph1-left-div {
 	height: 100%;
-	width: 84%;
+	width: 74%;
 	float: left;
 }
-#furtherStateGraph-right-div {
+#furtherStateGraph1-right-div {
 	height: 100%;
-	width: 16%;
+	width: 26%;
+	float: right;
+}
+#furtherStateGraph2-left-wrapper {
+	height: 100%;
+	width: 5%;
+	float: left;
+}
+#furtherStateGraph2-right-wrapper {
+	height: 100%;
+	width: 95%;
+	float: right;
+}
+#furtherStateGraph2-left-div {
+	height: 100%;
+	width: 74%;
+	float: left;
+}
+#furtherStateGraph2-right-div {
+	height: 100%;
+	width: 26%;
 	float: right;
 }
 .process-node {
