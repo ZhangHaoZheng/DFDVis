@@ -47,7 +47,7 @@ var compareGraph = {
 	_border: 20,
 	_interval: 20,
 	_overview_r: 0,
-	rectlength: 5,
+	rectlength: 8,
 	_linesPrefix: "line-",
 	_circlesPrefix: "circle-",
 	_actionPrefix: "action-",
@@ -841,11 +841,41 @@ var compareGraph = {
 				});
 			lines.exit()
 				.remove();			
+			var nodesCircle = nodes.filter(function(n) {
+				if(n.ifBalance === 1) {
+					return true;
+				}
+				return false;
+			});
+			var nodesRect = nodes.filter(function(n) {
+				if(n.ifStop === true) {
+					return true;
+				}
+				return false;
+			});
+			var nodesTri = nodes.filter(function(n) {
+				if(n.ifBalance === 0 && !n.ifStop) {
+					return true;
+				}
+				return false;
+			});
 			var circles = self._compareGraphDetailSvgG.selectAll(".circle")
-				.data(nodes, function(n) {
+				.data(nodesCircle, function(n) {
+					return n.id;
+				});
+			var rectangles = self._compareGraphDetailSvgG.selectAll(".rect")
+				.data(nodesRect, function(n) {
+					return n.id;
+				});
+			var triangles = self._compareGraphDetailSvgG.selectAll(".triangle")
+				.data(nodesTri, function(n) {
 					return n.id;
 				});
 			circles.exit()
+				.remove();
+			rectangles.exit()
+				.remove();
+			triangles.exit()
 				.remove();
 			lines.attr("class", function(l) {
 					transitionMark = true;
@@ -878,7 +908,52 @@ var compareGraph = {
 				})
 				.attr("cy", function(n) {
 					return y_linear_detail(n.y);
-				});			
+				});
+			rectangles.transition()
+				.delay(300)
+				.duration(800)
+				.attr("class", function(n) {
+					transitionMark = true;
+					var l1 = n.class.length;
+					var classStr = "rect";
+					for(var i = 0; i < l1; i++) {
+						classStr += (" " + n.class[i]);
+					}
+					return classStr;
+				})
+				.attr("x", function(n) {
+					return x_linear_detail(n.x) - self.rectlength / 2;
+				})
+				.attr("y", function(n) {
+					return y_linear_detail(n.y) - self.rectlength / 2;
+				})
+				.attr("width", self.rectlength)
+				.attr("height", self.rectlength);
+			triangles.transition()
+				.delay(300)
+				.duration(800)
+				.attr("class", function(n) {
+					transitionMark = true;
+					var l1 = n.class.length;
+					var classStr = "triangle";
+					for(var i = 0; i < l1; i++) {
+						classStr += (" " + n.class[i]);
+					}
+					return classStr;
+				})
+				.attr("points", function(n) {
+					var centerX = x_linear_detail(n.x);
+					var centerY = y_linear_detail(n.y);
+					var point1X = centerX;
+					var point1Y = centerY - self.rectlength;
+					var point2X = centerX - self.rectlength / 2 * 1.7;
+					var point2Y = centerY + self.rectlength / 2;
+					var point3X = centerX + self.rectlength / 2 * 1.7;
+					var point3Y = centerY + self.rectlength / 2;
+					return point1X + "," + point1Y + " " 
+						+ point2X + "," + point2Y + " " 
+						+ point3X + "," + point3Y;
+				});
 			lines.enter()
 				.insert("path")
 				.attr("id", function(l) {
@@ -930,13 +1005,7 @@ var compareGraph = {
 				})
 				.duration(500)
 				.attr("d", _computeWidthOfLine);
-			circles.enter()/*
-				.filter(function(n) {
-					if(n.ifBalance === 1) {
-						return true;
-					}
-					return false;
-				})*/
+			circles.enter()
 				.append("circle")
 				.attr("id", function(n) {
 					return self._circlesPrefix + self._fixTheSelectProblem(n.id);
@@ -971,19 +1040,16 @@ var compareGraph = {
 					}
 					return classStr;
 				});
-			/*circles.enter()
-				.filter(function(n) {
-					if(n.ifBalance === 0 && n.ifStop === true) {
-						return true;
-					}
-					return false;
-				})
+			rectangles.enter()
 				.append("rect")
+				.attr("id", function(n) {
+					return self._circlesPrefix + self._fixTheSelectProblem(n.id);
+				})
 				.attr("x", function(n) {
-					return x_linear_detail(n.x);
+					return x_linear_detail(n.x) - self.rectlength / 2;
 				})
 				.attr("y", function(n) {
-					return y_linear_detail(n.y);
+					return y_linear_detail(n.y) - self.rectlength / 2;
 				})
 				.attr("width", self.rectlength)
 				.attr("height", self.rectlength)
@@ -1005,20 +1071,17 @@ var compareGraph = {
 				})
 				.attr("class", function(n) {
 					var l1 = n.class.length;
-					var classStr = "circle";
+					var classStr = "rect";
 					for(var i = 0; i < l1; i++) {
 						classStr += (" " + n.class[i]);
 					}
 					return classStr;
 				});
-			circles.enter()
-				.filter(function(n) {
-					if(n.ifBalance === 0 && n.ifStop === false) {
-						return true;
-					}
-					return false;
-				})
+			triangles.enter()
 				.append("polygon")
+				.attr("id", function(n) {
+					return self._circlesPrefix + self._fixTheSelectProblem(n.id);
+				})
 				.attr("points", function(n) {
 					var centerX = x_linear_detail(n.x);
 					var centerY = y_linear_detail(n.y);
@@ -1050,12 +1113,13 @@ var compareGraph = {
 				})
 				.attr("class", function(n) {
 					var l1 = n.class.length;
-					var classStr = "circle";
+					var classStr = "triangle";
 					for(var i = 0; i < l1; i++) {
 						classStr += (" " + n.class[i]);
 					}
 					return classStr;
-				});*/
+				});
+			
 			var line_actions = links.filter(function(l) {
 				var l2 = l.class.length;
 				for(var i = 0; i < l2; i++) {
@@ -1149,8 +1213,14 @@ var compareGraph = {
 		}
 		function _drawCompareGraphOverview() {
 			//作图overview
+			var nodesCircle = self._overview_nodes.filter(function(n) {
+				if(n.ifBalance === 1) {
+					return true;
+				}
+				return false;
+			});
 			var circles = self._compareGraphOverviewSvgG.selectAll(".circle")
-				.data(self._overview_nodes, function(n) {
+				.data(nodesCircle, function(n) {
 					return n.id;
 				});
 			circles.exit()
@@ -1222,6 +1292,133 @@ var compareGraph = {
 						var classStr = "circle pastNode undrawedNode";
 						return classStr;
 					}
+				});
+			var nodesRect = self._overview_nodes.filter(function(n) {
+				if(n.ifStop === true) {
+					return true;
+				}
+				return false;
+			});
+			var rectangles = self._compareGraphOverviewSvgG.selectAll(".rect")
+				.data(nodesRect, function(n) {
+					return n.id;
+				});
+			rectangles.exit()
+				.remove();
+			rectangles.enter()
+				.append("rect")
+				.attr("id", function(n) {
+					return self._circlesOverviewPrefix + self._fixTheSelectProblem(n.id);
+				})
+				.attr("x", function(n) {
+					return n.overview_x - self.rectlength / 2;
+				})
+				.attr("y", function(n) {
+					return n.overview_y - self.rectlength / 2;
+				})
+				.attr("width", self.rectlength)
+				.attr("height", self.rectlength)
+				.on("click", function(n) {
+					//self._renderNodeLinkView(n.id);
+				})
+				.on("mouseover", function(n) {
+					//self._mouseoverNode(n.id);
+				})
+				.on("mouseout", function(n) {
+					//self._mouseoutNode(n.id);
+				})
+				.transition()
+				.delay(function() {
+					if(transitionMark == false) {
+						return 0;
+					}
+					return 1100;
+				})
+				.attr("class", function(n) {
+					var l1 = n.class.length;
+					var classStr = "rect";
+					for(var i = 0; i < l1; i++) {
+						classStr += (" " + n.class[i]);
+					}
+					return classStr;
+				});
+			rectangles.transition()
+				.delay(300)
+				.duration(800)
+				.attr("class", function(n) {
+					transitionMark = true;
+					var l1 = n.class.length;
+					var classStr = "rect";
+					for(var i = 0; i < l1; i++) {
+						classStr += (" " + n.class[i]);
+					}
+					return classStr;
+				});
+			var nodesTri = self._overview_nodes.filter(function(n) {
+				if(n.ifBalance === 0 && !n.ifStop) {
+					return true;
+				}
+				return false;
+			});
+			var triangles = self._compareGraphOverviewSvgG.selectAll(".triangle")
+				.data(nodesTri, function(n) {
+					return n.id;
+				});
+			triangles.exit()
+				.remove();
+			triangles.enter()
+				.append("polygon")
+				.attr("id", function(n) {
+					return self._circlesOverviewPrefix + self._fixTheSelectProblem(n.id);
+				})
+				.attr("points", function(n) {
+					var centerX = n.overview_x;
+					var centerY = n.overview_y;
+					var point1X = centerX;
+					var point1Y = centerY - self.rectlength;
+					var point2X = centerX - self.rectlength / 2 * 1.7;
+					var point2Y = centerY + self.rectlength / 2;
+					var point3X = centerX + self.rectlength / 2 * 1.7;
+					var point3Y = centerY + self.rectlength / 2;
+					return point1X + "," + point1Y + " " 
+						+ point2X + "," + point2Y + " " 
+						+ point3X + "," + point3Y;
+				})
+				.on("click", function(n) {
+					//self._renderNodeLinkView(n.id);
+				})
+				.on("mouseover", function(n) {
+					//self._mouseoverNode(n.id);
+				})
+				.on("mouseout", function(n) {
+					//self._mouseoutNode(n.id);
+				})
+				.transition()
+				.delay(function() {
+					if(transitionMark == false) {
+						return 0;
+					}
+					return 1100;
+				})
+				.attr("class", function(n) {
+					var l1 = n.class.length;
+					var classStr = "triangle";
+					for(var i = 0; i < l1; i++) {
+						classStr += (" " + n.class[i]);
+					}
+					return classStr;
+				});
+			triangles.transition()
+				.delay(300)
+				.duration(800)
+				.attr("class", function(n) {
+					transitionMark = true;
+					var l1 = n.class.length;
+					var classStr = "triangle";
+					for(var i = 0; i < l1; i++) {
+						classStr += (" " + n.class[i]);
+					}
+					return classStr;
 				});
 		}
 		function _drawRoute() {
