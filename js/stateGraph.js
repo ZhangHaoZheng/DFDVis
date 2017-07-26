@@ -1,4 +1,5 @@
 var stateGraph = {
+	name: undefined,
 	rootNode: undefined,
 	maxDepth: undefined,//实节点的最大深度
 	output: undefined,
@@ -39,8 +40,9 @@ var stateGraph = {
 	_maxWidth: 0, //_nodeOfminDepth二维数组的最大宽度
 	_overview_r: 0, //overview中节点半径
 	_tip: d3.tip().attr("class", "d3-tip"),
-	initialize: function(div_id, output, processGraphObject) {
+	initialize: function(div_id, output, processGraphObject, name) {
 		var self = this;
+		self.name = name;
 		self.stateGraphDivID = div_id;
 		self.stateGraphDetailDivId = div_id + "-detail";
 		self.stateGraphOverviewDivid = div_id + "-overview";
@@ -1406,6 +1408,41 @@ var stateGraph = {
 		self._stateGraph_detail_g.select("#" + self._circlesPrefix + self._fixTheSelectProblem(node_id))
 						.classed("focus-highlight", true);
 		if(!already_tip) {
+			var mark = compareGraph.mouseoverNodeInStateGraph(node_id, self.name);
+			if(mark === false) {
+				//if there is no corresponding nodes in compareGraph
+				var nodes = findParentNodesDoTau(n);
+				var correspondingNodesID = nodes.corresponding;
+				var notCorrespondingNodesID = nodes.notCorresponding;
+				self._stateGraph_overview_g.selectAll(".circle")
+					.classed("semifocus-highlight", function(n) {
+						if(notCorrespondingNodesID[n.id] === true) {
+							return true;
+						}
+						return false;
+					});
+				self._stateGraph_detail_g.selectAll(".circle")
+					.classed("semifocus-highlight", function(n) {
+						if(notCorrespondingNodesID[n.id] === true) {
+							return true;
+						}
+						return false;
+					});
+				self._stateGraph_overview_g.selectAll(".circle")
+					.classed("otherfocus-highlight", function(n) {
+						if(correspondingNodesID[n.id] === true) {
+							return true;
+						}
+						return false;
+					});
+				self._stateGraph_detail_g.selectAll(".circle")
+					.classed("otherfocus-highlight", function(n) {
+						if(correspondingNodesID[n.id] === true) {
+							return true;
+						}
+						return false;
+					});
+			}
 			self._tip.html(function() {
 				return "<b>CCS definition: </b><font color=\"#FF6347\">" 
 					+ n.id 
@@ -1416,6 +1453,42 @@ var stateGraph = {
 					+ "</font>";
 			});
 			self._tip.show();
+			self._tip.hide();
+		}
+
+		function findParentNodesDoTau(node) {
+			var tauNodes = [];
+			var rootNodes = [];
+			var mark = [];
+			var queue = [];
+			mark[node.id] = true;
+			queue.push(node);
+			while(queue.length != 0) {
+				var n = queue.shift();
+				for(var i = 0; i < n.in.length; i++) {
+					if(ifTauAction(n.in[i].action) === true) {
+						if(!mark[n.in[i].state.id]) {
+							if(compareGraph.ifDrawedInCompareGraph(n.in[i].state.id, self.name)) {
+								rootNodes[n.in[i].state.id] = true;
+								mark[n.in[i].state.id] = true;
+							}
+							else {
+								tauNodes[n.in[i].state.id] = true;
+								mark[n.in[i].state.id] = true;
+								queue.push(n.in[i].state);
+							}
+						}
+					}
+				}
+			}
+			return {corresponding: rootNodes, notCorresponding: tauNodes};
+		}
+
+		function ifTauAction(action) {
+			if(action.substring(0, 5) == "input" || action.substring(0, 6) == "output") {
+				return false;
+			}
+			return true;
 		}
 	},
 	mouseoutNode: function(node_id, already_tip) {
@@ -1426,6 +1499,15 @@ var stateGraph = {
 		self._stateGraph_detail_g.select("#" + self._circlesPrefix + self._fixTheSelectProblem(node_id))
 						.classed("focus-highlight", false);
 		if(!already_tip) {
+			compareGraph.mouseoutNodeInStateGraph(node_id, self.name);
+			self._stateGraph_overview_g.selectAll(".semifocus-highlight")
+				.classed("semifocus-highlight", false);
+			self._stateGraph_detail_g.selectAll(".semifocus-highlight")
+				.classed("semifocus-highlight", false);
+			self._stateGraph_overview_g.selectAll(".otherfocus-highlight")
+				.classed("otherfocus-highlight", false);
+			self._stateGraph_detail_g.selectAll(".otherfocus-highlight")
+				.classed("otherfocus-highlight", false);
 			self._tip.hide();
 		}
 	},

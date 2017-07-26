@@ -27,6 +27,8 @@ var compareGraph = {
 	_maxMinDepth: 0,
 	maxDepth:undefined,
 	_idToNode: undefined,
+	markDfd1: undefined,
+	markDfd2: undefined,
 	_overview_nodes: undefined,
 	_maxWidth: 0,
 	compareGraphDetailDivID: undefined,
@@ -106,10 +108,11 @@ var compareGraph = {
 		tmpMergedObject = self._constructMergedGraph(self.newDfd1Root, self.newDfd2Root);
 		self.mergedRoot = tmpMergedObject.root;
 		self.mergedDict = tmpMergedObject.dict;
+		self.markDfd1 = tmpMergedObject.mark1;
+		self.markDfd2 = tmpMergedObject.mark2;
 		self._idToNode = self.mergedDict;
 		/*node-link-form*/
 		self._changedMergedRoot = self._changeIntoSGDataStructure(self.mergedRoot);
-		console.log(self._changedMergedRoot);
 		/*node-link-form*/
 
 		/*tmpLinksObject = self._constructLinks(self.mergedRoot);
@@ -123,6 +126,7 @@ var compareGraph = {
 		self.blocks2Dict = tmpBlock2Object.blocksDict;
 		self.matrix = self._constructMatrix(self.blocks1, self.blocks2, self.mergedDict, self.dictCircle);*/
 		retract();//缩进页面
+		self._addButton();
 		self._computeNodesPositionInOverview();
 		self.showLevelsOfStategraph(0, 0);
 		/*self._renderView(
@@ -280,10 +284,12 @@ var compareGraph = {
 		var self = this;
 		var mergedRoot = null;
 		var pairOfCcsDict = [];
+		var markDfd1 = [];
+		var markDfd2 = [];
 		if(self._ifEqual(newDfd1Root, newDfd2Root) === true) {
 			mergedRoot = mergeRecursively(newDfd1Root, newDfd2Root);
 		}
-		return {root: mergedRoot, dict: pairOfCcsDict};
+		return {root: mergedRoot, dict: pairOfCcsDict, mark1: markDfd1, mark2: markDfd2};
 
 		function mergeRecursively(node1, node2) {
 			var mergedObject = {};
@@ -305,6 +311,8 @@ var compareGraph = {
 				mergedObject.commonActionDict[node1.actionList[i]].developList = [];
 			}
 			pairOfCcsDict[mergedObject.id] = mergedObject;
+			markDfd1[mergedObject.CCSid1] = true;
+			markDfd2[mergedObject.CCSid2] = true;
 			for(var i = 0; i < mergedObject.commonActionList.length; i++) {
 				var action = mergedObject.commonActionList[i];
 				var devList1 = node1.actionDict[mergedObject.commonActionList[i]];
@@ -863,7 +871,15 @@ var compareGraph = {
 				.data(nodesCircle, function(n) {
 					return n.id;
 				});
+			var circlesL = self._compareGraphDetailSvgG.selectAll(".circleL")
+				.data(nodesCircle, function(n) {
+					return n.id;
+				});
 			var rectangles = self._compareGraphDetailSvgG.selectAll(".rect")
+				.data(nodesRect, function(n) {
+					return n.id;
+				});
+			var rectanglesL = self._compareGraphDetailSvgG.selectAll(".rectL")
 				.data(nodesRect, function(n) {
 					return n.id;
 				});
@@ -871,11 +887,21 @@ var compareGraph = {
 				.data(nodesTri, function(n) {
 					return n.id;
 				});
+			var trianglesL = self._compareGraphDetailSvgG.selectAll(".triangleL")
+				.data(nodesTri, function(n) {
+					return n.id;
+				});
 			circles.exit()
+				.remove();
+			circlesL.exit()
 				.remove();
 			rectangles.exit()
 				.remove();
+			rectanglesL.exit()
+				.remove();
 			triangles.exit()
+				.remove();
+			trianglesL.exit()
 				.remove();
 			lines.attr("class", function(l) {
 					transitionMark = true;
@@ -897,7 +923,7 @@ var compareGraph = {
 				.attr("class", function(n) {
 					transitionMark = true;
 					var l1 = n.class.length;
-					var classStr = "circle";
+					var classStr = "circle node";
 					for(var i = 0; i < l1; i++) {
 						classStr += (" " + n.class[i]);
 					}
@@ -909,13 +935,37 @@ var compareGraph = {
 				.attr("cy", function(n) {
 					return y_linear_detail(n.y);
 				});
+			circlesL.transition()
+				.delay(300)
+				.duration(800)
+				.attr("class", function(n) {
+					transitionMark = true;
+					var l1 = n.class.length;
+					var classStr = "circleL node";
+					for(var i = 0; i < l1; i++) {
+						classStr += (" " + n.class[i]);
+					}
+					return classStr;
+				})
+				.attr("x1", function(n) {
+					return x_linear_detail(n.x);
+				})
+				.attr("y1", function(n) {
+					return y_linear_detail(n.y) - 4;
+				})
+				.attr("x2", function(n) {
+					return x_linear_detail(n.x);
+				})
+				.attr("y2", function(n) {
+					return y_linear_detail(n.y) + 4;
+				});
 			rectangles.transition()
 				.delay(300)
 				.duration(800)
 				.attr("class", function(n) {
 					transitionMark = true;
 					var l1 = n.class.length;
-					var classStr = "rect";
+					var classStr = "rect node";
 					for(var i = 0; i < l1; i++) {
 						classStr += (" " + n.class[i]);
 					}
@@ -929,13 +979,37 @@ var compareGraph = {
 				})
 				.attr("width", self.rectlength)
 				.attr("height", self.rectlength);
+			rectanglesL.transition()
+				.delay(300)
+				.duration(800)
+				.attr("class", function(n) {
+					transitionMark = true;
+					var l1 = n.class.length;
+					var classStr = "rectL node";
+					for(var i = 0; i < l1; i++) {
+						classStr += (" " + n.class[i]);
+					}
+					return classStr;
+				})
+				.attr("x1", function(n) {
+					return x_linear_detail(n.x);
+				})
+				.attr("y1", function(n) {
+					return y_linear_detail(n.y) - self.rectlength / 2;
+				})
+				.attr("x2", function(n) {
+					return x_linear_detail(n.x);
+				})
+				.attr("y2", function(n) {
+					return y_linear_detail(n.y) + self.rectlength / 2;
+				});
 			triangles.transition()
 				.delay(300)
 				.duration(800)
 				.attr("class", function(n) {
 					transitionMark = true;
 					var l1 = n.class.length;
-					var classStr = "triangle";
+					var classStr = "triangle node";
 					for(var i = 0; i < l1; i++) {
 						classStr += (" " + n.class[i]);
 					}
@@ -953,6 +1027,30 @@ var compareGraph = {
 					return point1X + "," + point1Y + " " 
 						+ point2X + "," + point2Y + " " 
 						+ point3X + "," + point3Y;
+				});
+			trianglesL.transition()
+				.delay(300)
+				.duration(800)
+				.attr("class", function(n) {
+					transitionMark = true;
+					var l1 = n.class.length;
+					var classStr = "triangleL node";
+					for(var i = 0; i < l1; i++) {
+						classStr += (" " + n.class[i]);
+					}
+					return classStr;
+				})
+				.attr("x1", function(n) {
+					return x_linear_detail(n.x);
+				})
+				.attr("y1", function(n) {
+					return y_linear_detail(n.y) - self.rectlength;
+				})
+				.attr("x2", function(n) {
+					return x_linear_detail(n.x);
+				})
+				.attr("y2", function(n) {
+					return y_linear_detail(n.y) + self.rectlength / 2;
 				});
 			lines.enter()
 				.insert("path")
@@ -1010,6 +1108,12 @@ var compareGraph = {
 				.attr("id", function(n) {
 					return self._circlesPrefix + self._fixTheSelectProblem(n.id);
 				})
+				.attr("CCSid1", function(n) {
+					return n.CCSid1;
+				})
+				.attr("CCSid2", function(n) {
+					return n.CCSid2;
+				})
 				.attr("cx", function(n) {
 					return x_linear_detail(n.x);
 				})
@@ -1017,13 +1121,13 @@ var compareGraph = {
 					return y_linear_detail(n.y);
 				})
 				.on("click", function(n) {
-					//self._renderNodeLinkView(n.id);
+					self._renderNodeLinkView(n.id);
 				})
 				.on("mouseover", function(n) {
-					//self._mouseoverNode(n.id);
+					self._mouseoverNode(n.id);
 				})
 				.on("mouseout", function(n) {
-					//self._mouseoutNode(n.id);
+					self._mouseoutNode(n.id);
 				})
 				.transition()
 				.delay(function() {
@@ -1034,16 +1138,45 @@ var compareGraph = {
 				})
 				.attr("class", function(n) {
 					var l1 = n.class.length;
-					var classStr = "circle";
+					var classStr = "circle node";
 					for(var i = 0; i < l1; i++) {
 						classStr += (" " + n.class[i]);
 					}
 					return classStr;
 				});
+			circlesL.enter()
+				.append("line")
+				.attr("class", function(n) {
+					transitionMark = true;
+					var l1 = n.class.length;
+					var classStr = "circleL node";
+					for(var i = 0; i < l1; i++) {
+						classStr += (" " + n.class[i]);
+					}
+					return classStr;
+				})
+				.attr("x1", function(n) {
+					return x_linear_detail(n.x);
+				})
+				.attr("y1", function(n) {
+					return y_linear_detail(n.y) - 4;
+				})
+				.attr("x2", function(n) {
+					return x_linear_detail(n.x);
+				})
+				.attr("y2", function(n) {
+					return y_linear_detail(n.y) + 4;
+				});
 			rectangles.enter()
 				.append("rect")
 				.attr("id", function(n) {
 					return self._circlesPrefix + self._fixTheSelectProblem(n.id);
+				})
+				.attr("CCSid1", function(n) {
+					return n.CCSid1;
+				})
+				.attr("CCSid2", function(n) {
+					return n.CCSid2;
 				})
 				.attr("x", function(n) {
 					return x_linear_detail(n.x) - self.rectlength / 2;
@@ -1054,13 +1187,13 @@ var compareGraph = {
 				.attr("width", self.rectlength)
 				.attr("height", self.rectlength)
 				.on("click", function(n) {
-					//self._renderNodeLinkView(n.id);
+					self._renderNodeLinkView(n.id);
 				})
 				.on("mouseover", function(n) {
-					//self._mouseoverNode(n.id);
+					self._mouseoverNode(n.id);
 				})
 				.on("mouseout", function(n) {
-					//self._mouseoutNode(n.id);
+					self._mouseoutNode(n.id);
 				})
 				.transition()
 				.delay(function() {
@@ -1071,16 +1204,45 @@ var compareGraph = {
 				})
 				.attr("class", function(n) {
 					var l1 = n.class.length;
-					var classStr = "rect";
+					var classStr = "rect node";
 					for(var i = 0; i < l1; i++) {
 						classStr += (" " + n.class[i]);
 					}
 					return classStr;
 				});
+			rectanglesL.enter()
+				.append("line")
+				.attr("class", function(n) {
+					transitionMark = true;
+					var l1 = n.class.length;
+					var classStr = "rectL node";
+					for(var i = 0; i < l1; i++) {
+						classStr += (" " + n.class[i]);
+					}
+					return classStr;
+				})
+				.attr("x1", function(n) {
+					return x_linear_detail(n.x);
+				})
+				.attr("y1", function(n) {
+					return y_linear_detail(n.y) - self.rectlength / 2;
+				})
+				.attr("x2", function(n) {
+					return x_linear_detail(n.x);
+				})
+				.attr("y2", function(n) {
+					return y_linear_detail(n.y) + self.rectlength / 2;
+				});
 			triangles.enter()
 				.append("polygon")
 				.attr("id", function(n) {
 					return self._circlesPrefix + self._fixTheSelectProblem(n.id);
+				})
+				.attr("CCSid1", function(n) {
+					return n.CCSid1;
+				})
+				.attr("CCSid2", function(n) {
+					return n.CCSid2;
 				})
 				.attr("points", function(n) {
 					var centerX = x_linear_detail(n.x);
@@ -1096,13 +1258,13 @@ var compareGraph = {
 						+ point3X + "," + point3Y;
 				})
 				.on("click", function(n) {
-					//self._renderNodeLinkView(n.id);
+					self._renderNodeLinkView(n.id);
 				})
 				.on("mouseover", function(n) {
-					//self._mouseoverNode(n.id);
+					self._mouseoverNode(n.id);
 				})
 				.on("mouseout", function(n) {
-					//self._mouseoutNode(n.id);
+					self._mouseoutNode(n.id);
 				})
 				.transition()
 				.delay(function() {
@@ -1113,13 +1275,36 @@ var compareGraph = {
 				})
 				.attr("class", function(n) {
 					var l1 = n.class.length;
-					var classStr = "triangle";
+					var classStr = "triangle node";
 					for(var i = 0; i < l1; i++) {
 						classStr += (" " + n.class[i]);
 					}
 					return classStr;
 				});
-			
+			trianglesL.enter()
+				.append("line")
+				.attr("class", function(n) {
+					transitionMark = true;
+					var l1 = n.class.length;
+					var classStr = "triangleL node";
+					for(var i = 0; i < l1; i++) {
+						classStr += (" " + n.class[i]);
+					}
+					return classStr;
+				})
+				.attr("x1", function(n) {
+					return x_linear_detail(n.x);
+				})
+				.attr("y1", function(n) {
+					return y_linear_detail(n.y) - self.rectlength;
+				})
+				.attr("x2", function(n) {
+					return x_linear_detail(n.x);
+				})
+				.attr("y2", function(n) {
+					return y_linear_detail(n.y) + self.rectlength / 2;
+				});
+
 			var line_actions = links.filter(function(l) {
 				var l2 = l.class.length;
 				for(var i = 0; i < l2; i++) {
@@ -1223,12 +1408,24 @@ var compareGraph = {
 				.data(nodesCircle, function(n) {
 					return n.id;
 				});
+			var circlesL = self._compareGraphOverviewSvgG.selectAll(".circleL")
+				.data(nodesCircle, function(n) {
+					return n.id;
+				});
 			circles.exit()
+				.remove();
+			circlesL.exit()
 				.remove();
 			circles.enter()
 				.append("circle")
 				.attr("id", function(n) {
 					return self._circlesOverviewPrefix + self._fixTheSelectProblem(n.id);
+				})
+				.attr("CCSid1", function(n) {
+					return n.CCSid1;
+				})
+				.attr("CCSid2", function(n) {
+					return n.CCSid2;
 				})
 				.attr("cx", function(n) {
 					return n.overview_x;
@@ -1240,18 +1437,19 @@ var compareGraph = {
 				.attr("class", function(n) {
 					if(self.nodesNow[n.id] == true) {
 						var l1 = n.class.length;
-						var classStr = "circle";
+						var classStr = "circle node";
 						for(var i = 0; i < l1; i++) {
 							classStr += (" " + n.class[i]);
 						}
 						return classStr;
 					}
 					else {
-						var classStr = "circle undrawedNode";
+						var classStr = "circle undrawedNode node";
 						return classStr;
 					}
 				})
 				.on("click", function(n) {
+					console.log(n);
 					self._renderNodeLinkView(n.id);
 				})
 				.on("mouseover", function(n) {
@@ -1259,6 +1457,34 @@ var compareGraph = {
 				})
 				.on("mouseout", function(n) {
 					self._mouseoutNode(n.id);
+				});
+			circlesL.enter()
+				.append("line")
+				.attr("class", function(n) {
+					if(self.nodesNow[n.id] == true) {
+						var l1 = n.class.length;
+						var classStr = "circleL node";
+						for(var i = 0; i < l1; i++) {
+							classStr += (" " + n.class[i]);
+						}
+						return classStr;
+					}
+					else {
+						var classStr = "circleL undrawedNode node";
+						return classStr;
+					}
+				})
+				.attr("x1", function(n) {
+					return n.overview_x;
+				})
+				.attr("y1", function(n) {
+					return n.overview_y - self._overview_r;
+				})
+				.attr("x2", function(n) {
+					return n.overview_x;
+				})
+				.attr("y2", function(n) {
+					return n.overview_y + self._overview_r;
 				});
 			circles.transition()
 				.delay(function(n) {
@@ -1278,18 +1504,51 @@ var compareGraph = {
 				.attr("class", function(n) {
 					if(self.nodesNow[n.id] == true) {
 						var l1 = n.class.length;
-						var classStr = "circle";
+						var classStr = "circle node";
 						for(var i = 0; i < l1; i++) {
 							classStr += (" " + n.class[i]);
 						}
 						return classStr;
 					}
 					else if(self.nodePast != n.id) {
-						var classStr = "circle undrawedNode";
+						var classStr = "circle undrawedNode node";
 						return classStr;
 					}
 					else {
-						var classStr = "circle pastNode undrawedNode";
+						var classStr = "circle pastNode undrawedNode node";
+						return classStr;
+					}
+				});
+			circlesL.transition()
+				.delay(function(n) {
+					if(self.nodesNow[n.id] == false) {
+						return 0;
+					}
+					else if(self.nodesPast != undefined && self.nodesPast[n.id] == true) {
+						return 300;
+					}
+					else {
+						if(transitionMark == false) {
+							return 0;
+						}
+						else return 1100;
+					}
+				})
+				.attr("class", function(n) {
+					if(self.nodesNow[n.id] == true) {
+						var l1 = n.class.length;
+						var classStr = "circleL node";
+						for(var i = 0; i < l1; i++) {
+							classStr += (" " + n.class[i]);
+						}
+						return classStr;
+					}
+					else if(self.nodePast != n.id) {
+						var classStr = "circleL undrawedNode node";
+						return classStr;
+					}
+					else {
+						var classStr = "circleL pastNode undrawedNode node";
 						return classStr;
 					}
 				});
@@ -1303,12 +1562,24 @@ var compareGraph = {
 				.data(nodesRect, function(n) {
 					return n.id;
 				});
+			var rectanglesL = self._compareGraphOverviewSvgG.selectAll(".rectL")
+				.data(nodesRect, function(n) {
+					return n.id;
+				});
 			rectangles.exit()
+				.remove();
+			rectanglesL.exit()
 				.remove();
 			rectangles.enter()
 				.append("rect")
 				.attr("id", function(n) {
 					return self._circlesOverviewPrefix + self._fixTheSelectProblem(n.id);
+				})
+				.attr("CCSid1", function(n) {
+					return n.CCSid1;
+				})
+				.attr("CCSid2", function(n) {
+					return n.CCSid2;
 				})
 				.attr("x", function(n) {
 					return n.overview_x - self.rectlength / 2;
@@ -1319,13 +1590,13 @@ var compareGraph = {
 				.attr("width", self.rectlength)
 				.attr("height", self.rectlength)
 				.on("click", function(n) {
-					//self._renderNodeLinkView(n.id);
+					self._renderNodeLinkView(n.id);
 				})
 				.on("mouseover", function(n) {
-					//self._mouseoverNode(n.id);
+					self._mouseoverNode(n.id);
 				})
 				.on("mouseout", function(n) {
-					//self._mouseoutNode(n.id);
+					self._mouseoutNode(n.id);
 				})
 				.transition()
 				.delay(function() {
@@ -1335,24 +1606,88 @@ var compareGraph = {
 					return 1100;
 				})
 				.attr("class", function(n) {
-					var l1 = n.class.length;
-					var classStr = "rect";
-					for(var i = 0; i < l1; i++) {
-						classStr += (" " + n.class[i]);
+					if(self.nodesNow[n.id] == true) {
+						var l1 = n.class.length;
+						var classStr = "rect node";
+						for(var i = 0; i < l1; i++) {
+							classStr += (" " + n.class[i]);
+						}
+						return classStr;
 					}
-					return classStr;
+					else {
+						var classStr = "rect undrawedNode node";
+						return classStr;
+					}
+				});
+			rectanglesL.enter()
+				.append("line")
+				.attr("class", function(n) {
+					if(self.nodesNow[n.id] == true) {
+						var l1 = n.class.length;
+						var classStr = "rectL node";
+						for(var i = 0; i < l1; i++) {
+							classStr += (" " + n.class[i]);
+						}
+						return classStr;
+					}
+					else {
+						var classStr = "rectL undrawedNode node";
+						return classStr;
+					}
+				})
+				.attr("x1", function(n) {
+					return n.overview_x;
+				})
+				.attr("y1", function(n) {
+					return n.overview_y - self.rectlength / 2;
+				})
+				.attr("x2", function(n) {
+					return n.overview_x;
+				})
+				.attr("y2", function(n) {
+					return n.overview_y + self.rectlength / 2;
 				});
 			rectangles.transition()
 				.delay(300)
 				.duration(800)
 				.attr("class", function(n) {
-					transitionMark = true;
-					var l1 = n.class.length;
-					var classStr = "rect";
-					for(var i = 0; i < l1; i++) {
-						classStr += (" " + n.class[i]);
+					if(self.nodesNow[n.id] == true) {
+						var l1 = n.class.length;
+						var classStr = "rect node";
+						for(var i = 0; i < l1; i++) {
+							classStr += (" " + n.class[i]);
+						}
+						return classStr;
 					}
-					return classStr;
+					else if(self.nodePast != n.id) {
+						var classStr = "rect undrawedNode node";
+						return classStr;
+					}
+					else {
+						var classStr = "rect pastNode undrawedNode node";
+						return classStr;
+					}
+				});
+			rectanglesL.transition()
+				.delay(300)
+				.duration(800)
+				.attr("class", function(n) {
+					if(self.nodesNow[n.id] == true) {
+						var l1 = n.class.length;
+						var classStr = "rectL node";
+						for(var i = 0; i < l1; i++) {
+							classStr += (" " + n.class[i]);
+						}
+						return classStr;
+					}
+					else if(self.nodePast != n.id) {
+						var classStr = "rectL undrawedNode node";
+						return classStr;
+					}
+					else {
+						var classStr = "rectL pastNode undrawedNode node";
+						return classStr;
+					}
 				});
 			var nodesTri = self._overview_nodes.filter(function(n) {
 				if(n.ifBalance === 0 && !n.ifStop) {
@@ -1364,12 +1699,24 @@ var compareGraph = {
 				.data(nodesTri, function(n) {
 					return n.id;
 				});
+			var trianglesL = self._compareGraphOverviewSvgG.selectAll(".triangleL")
+				.data(nodesTri, function(n) {
+					return n.id;
+				});
 			triangles.exit()
+				.remove();
+			trianglesL.exit()
 				.remove();
 			triangles.enter()
 				.append("polygon")
 				.attr("id", function(n) {
 					return self._circlesOverviewPrefix + self._fixTheSelectProblem(n.id);
+				})
+				.attr("CCSid1", function(n) {
+					return n.CCSid1;
+				})
+				.attr("CCSid2", function(n) {
+					return n.CCSid2;
 				})
 				.attr("points", function(n) {
 					var centerX = n.overview_x;
@@ -1385,13 +1732,13 @@ var compareGraph = {
 						+ point3X + "," + point3Y;
 				})
 				.on("click", function(n) {
-					//self._renderNodeLinkView(n.id);
+					self._renderNodeLinkView(n.id);
 				})
 				.on("mouseover", function(n) {
-					//self._mouseoverNode(n.id);
+					self._mouseoverNode(n.id);
 				})
 				.on("mouseout", function(n) {
-					//self._mouseoutNode(n.id);
+					self._mouseoutNode(n.id);
 				})
 				.transition()
 				.delay(function() {
@@ -1401,24 +1748,88 @@ var compareGraph = {
 					return 1100;
 				})
 				.attr("class", function(n) {
-					var l1 = n.class.length;
-					var classStr = "triangle";
-					for(var i = 0; i < l1; i++) {
-						classStr += (" " + n.class[i]);
+					if(self.nodesNow[n.id] == true) {
+						var l1 = n.class.length;
+						var classStr = "triangle node";
+						for(var i = 0; i < l1; i++) {
+							classStr += (" " + n.class[i]);
+						}
+						return classStr;
 					}
-					return classStr;
+					else {
+						var classStr = "triangle undrawedNode node";
+						return classStr;
+					}
+				});
+			trianglesL.enter()
+				.append("line")
+				.attr("class", function(n) {
+					if(self.nodesNow[n.id] == true) {
+						var l1 = n.class.length;
+						var classStr = "triangleL node";
+						for(var i = 0; i < l1; i++) {
+							classStr += (" " + n.class[i]);
+						}
+						return classStr;
+					}
+					else {
+						var classStr = "triangleL undrawedNode node";
+						return classStr;
+					}
+				})
+				.attr("x1", function(n) {
+					return n.overview_x;
+				})
+				.attr("y1", function(n) {
+					return n.overview_y - self.rectlength;
+				})
+				.attr("x2", function(n) {
+					return n.overview_x;
+				})
+				.attr("y2", function(n) {
+					return n.overview_y + self.rectlength / 2;
 				});
 			triangles.transition()
 				.delay(300)
 				.duration(800)
 				.attr("class", function(n) {
-					transitionMark = true;
-					var l1 = n.class.length;
-					var classStr = "triangle";
-					for(var i = 0; i < l1; i++) {
-						classStr += (" " + n.class[i]);
+					if(self.nodesNow[n.id] == true) {
+						var l1 = n.class.length;
+						var classStr = "triangle node";
+						for(var i = 0; i < l1; i++) {
+							classStr += (" " + n.class[i]);
+						}
+						return classStr;
 					}
-					return classStr;
+					else if(self.nodePast != n.id) {
+						var classStr = "triangle undrawedNode node";
+						return classStr;
+					}
+					else {
+						var classStr = "triangle pastNode undrawedNode node";
+						return classStr;
+					}
+				});
+			trianglesL.transition()
+				.delay(300)
+				.duration(800)
+				.attr("class", function(n) {
+					if(self.nodesNow[n.id] == true) {
+						var l1 = n.class.length;
+						var classStr = "triangleL node";
+						for(var i = 0; i < l1; i++) {
+							classStr += (" " + n.class[i]);
+						}
+						return classStr;
+					}
+					else if(self.nodePast != n.id) {
+						var classStr = "triangleL undrawedNode node";
+						return classStr;
+					}
+					else {
+						var classStr = "triangleL pastNode undrawedNode node";
+						return classStr;
+					}
 				});
 		}
 		function _drawRoute() {
@@ -1619,23 +2030,30 @@ var compareGraph = {
 		self._compareGraphDetailSvgG.select("#" + self._circlesPrefix + self._fixTheSelectProblem(node_id))
 						.classed("focus-highlight", true);
 		self._tip.html(function() {
-			return "<b>CCS definition: </b><font color=\"#FF6347\">" 
-				+ n.id 
-				+ "</font><br><b>the minimum actions from the initial state: </b><font color=\"#FF6347\">"
+			return "<b>the first CCS definition: </b><font color=\"#FF6347\">" 
+				+ n.CCSid1 
+				+ "</font><br> <b>the second CCS definition: </b><font color=\"#FF6347\">"
+				+ n.CCSid2
+				+ "</font><br> <b>the minimum actions from the initial state: </b><font color=\"#FF6347\">"
 				+ n.mindepth 
 				+ "</font>   <b>maximum actions: </b><font color=\"#FF6347\">" 
 				+ n.maxdepth 
 				+ "</font>";
 		});
+		stateGraph1.mouseoverNode(n.CCSid1, true);
+		stateGraph2.mouseoverNode(n.CCSid2, true);
 		self._tip.show();
 	},
 	_mouseoutNode: function(node_id) {
 		//鼠标移开事件
 		var self = this;
+		var n = self._idToNode[node_id];
 		self._compareGraphOverviewSvgG.select("#" + self._circlesOverviewPrefix + self._fixTheSelectProblem(node_id))
 						.classed("focus-highlight", false);
 		self._compareGraphDetailSvgG.select("#" + self._circlesPrefix + self._fixTheSelectProblem(node_id))
 						.classed("focus-highlight", false);
+		stateGraph1.mouseoutNode(n.CCSid1, true);
+		stateGraph2.mouseoutNode(n.CCSid2, true);
 		self._tip.hide();
 	},
 	hideText: function() {
@@ -1650,6 +2068,170 @@ var compareGraph = {
 		self._compareGraphDetailSvgG.selectAll(".action")
 			.classed("action-hidden", false);
 	},
+	_addButton: function() {
+		var self = this;
+		//按钮部分
+		var toolBarDiv = d3.select("#" + self.compareGraphToolbarDivID);
+		//显示或隐藏action text
+		toolBarDiv.append("span")
+			.attr("id", "stateGraph_actionText")
+			.html("<img src=\"icon/visible.png\">")
+			.style("cursor", "pointer")
+			.on("click", function() {
+				if(self._ifActionTextVisible == true) {
+					d3.select(this).html("<img src=\"icon/hide.png\">");
+					self._ifActionTextVisible = false;
+					self.hideText();
+				}
+				else {
+					d3.select(this).html("<img src=\"icon/visible.png\">");
+					self._ifActionTextVisible = true;
+					self.showText();
+				}
+			});
+		toolBarDiv.append("br");
+		//增加显示父节点的层数
+		toolBarDiv.append("span")
+			.attr("id", "stateGraph_add_parent")
+			.html("<img src=\"icon/add.png\">")
+			.style("cursor", "pointer")
+			.on("click", function() {
+				self.numOfParentLevel += 1;
+				self._renderNodeLinkView(self.nodeNow);
+			});
+		toolBarDiv.append("br");
+		//减少显示父节点的层数
+		toolBarDiv.append("span")
+			.attr("id", "stateGraph_minus_parent")
+			.html("<img src=\"icon/minus.png\">")
+			.style("cursor", "pointer")
+			.on("click", function() {
+				self.numOfParentLevel -= 1;
+				self._renderNodeLinkView(self.nodeNow);
+			});
+		toolBarDiv.append("br");
+		//增加显示孩子节点的层数
+		toolBarDiv.append("br");
+		toolBarDiv.append("span")
+			.attr("id", "stateGraph_add_children")
+			.html("<img src=\"icon/add.png\">")
+			.style("cursor", "pointer")
+			.on("click", function() {
+				self.numOfChildrenLevel += 1;
+				self._renderNodeLinkView(self.nodeNow);
+			});
+		toolBarDiv.append("br");
+		//减少显示孩子节点的层数
+		toolBarDiv.append("span")
+			.attr("id", "stateGraph_minus_children")
+			.html("<img src=\"icon/minus.png\">")
+			.style("cursor", "pointer")
+			.on("click", function() {
+				self.numOfChildrenLevel -= 1;
+				self._renderNodeLinkView(self.nodeNow);
+			});
+		toolBarDiv.append("br");
+		toolBarDiv.append("span")
+			.attr("id", "stateGraph_route_root")
+			.html("<img src=\"icon/route-root-visible.png\">")
+			.style("cursor", "pointer")
+			.on("click", function() {
+				if(self._ifRouteFromRootVisivle == true) {
+					d3.select(this).html("<img src=\"icon/route-root-hide.png\">");
+					self._ifRouteFromRootVisivle = false;
+					self._renderNodeLinkView(self.nodeNow);
+				}
+				else {
+					d3.select(this).html("<img src=\"icon/route-root-visible.png\">");
+					self._ifRouteFromRootVisivle = true;
+					self._renderNodeLinkView(self.nodeNow);
+				}
+			});
+		toolBarDiv.append("br");
+		toolBarDiv.append("span")
+			.attr("id", "stateGraph_route_past")
+			.html("<img src=\"icon/route-past-visible.png\">")
+			.style("cursor", "pointer")
+			.on("click", function() {
+				if(self._ifRouteFromPastVisible == true) {
+					d3.select(this).html("<img src=\"icon/route-past-hide.png\">");
+					self._ifRouteFromPastVisible = false;
+					self._renderNodeLinkView(self.nodeNow);
+				}
+				else {
+					d3.select(this).html("<img src=\"icon/route-past-visible.png\">");
+					self._ifRouteFromPastVisible = true;
+					self._renderNodeLinkView(self.nodeNow);
+				}
+			});
+	},
+	mouseoverNodeInStateGraph: function(id, name) {
+		var self = this;
+		var CCSid;
+		var mark = false;
+		if(name === "1") {
+			CCSid = "CCSid1";
+		}
+		else if(name === "2") {
+			CCSid = "CCSid2";
+		}
+		self._compareGraphDetailSvgG.selectAll(".node")
+			.classed("focus-highlight", function(n) {
+				if(n[CCSid] === id) {
+					mark = true;
+					return true;
+				}
+				return false;
+			});
+		self._compareGraphOverviewSvgG.selectAll(".node")
+			.classed("focus-highlight", function(n) {
+				if(n[CCSid] === id) {
+					mark = true;
+					return true;
+				}
+				return false;
+			});
+		return mark;
+	},
+	mouseoutNodeInStateGraph: function(id, name) {
+		var self = this;
+		self._compareGraphDetailSvgG.selectAll(".node")
+			.classed("focus-highlight", false);
+		self._compareGraphOverviewSvgG.selectAll(".node")
+			.classed("focus-highlight", false);
+	},
+	ifDrawedInCompareGraph: function(id, name) {
+		var self = this;
+		var mark;
+		if(name === "1") {
+			mark = self.markDfd1;
+		}
+		else if(name === "2") {
+			mark = self.markDfd2;
+		}
+		if(!mark[id]) {
+			return false;
+		}
+		return true;
+	},
+/*old 
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+part*/
 	_constructLinks: function (mergedRoot) {
 		var self = this;
 		var links = [];
@@ -2005,8 +2587,7 @@ var compareGraph = {
 		var self = this;
 		self.dfd1Root = undefined;
 		self.dfd2Root = undefined;
-		d3.select("#" + self.compareGraphSvgID)
-			.selectAll("g")
-			.remove();
+		d3.select("#" + self.compareGraphDivID)
+			.html("");
 	}
 }

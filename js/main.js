@@ -19,11 +19,11 @@ function SendDfdObjToServer(dfdObj, dfdIndex) {
                 DFD1GetTheResFromSever($.extend(true, {}, data));
             if(data.result != "Error"){
                 if(dfdIndex === 1) {
-                    stateGraph1.initialize("stateGraph1", data, processGraph1);
+                    stateGraph1.initialize("stateGraph1", data, processGraph1, "1");
                     compareGraph.addStateGraph(stateGraph1.rootNode, 1);
                 }
                 else if(dfdIndex === 2) {
-                    stateGraph2.initialize("stateGraph2", data, processGraph2);
+                    stateGraph2.initialize("stateGraph2", data, processGraph2, "2");
                     compareGraph.addStateGraph(stateGraph2.rootNode, 2);
                 }
                 compareGraph.initialize("comparisondiv");

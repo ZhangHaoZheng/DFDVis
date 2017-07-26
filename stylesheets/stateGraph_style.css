@@ -181,6 +181,37 @@ body {
     }
     100% {}
 }
+.semifocus-highlight {
+	animation-name: semihighlight-animation;
+ 	animation-duration: 1s;
+  	animation-timing-function: linear;
+  	animation-iteration-count: infinite;
+}
+@keyframes semihighlight-animation {
+    0% {}
+    50% {
+      	opacity: 0.6;
+     	stroke: #F00078;
+     	stroke-width: 2;
+    }
+    100% {}
+}
+.otherfocus-highlight {
+	animation-name: otherhighlight-animation;
+ 	animation-duration: 1s;
+  	animation-timing-function: linear;
+  	animation-iteration-count: infinite;
+}
+@keyframes otherhighlight-animation {
+    0% {}
+    50% {
+      	opacity: 0.6;
+      	fill: #D94600;
+     	stroke: #D94600;
+     	stroke-width: 2;
+    }
+    100% {}
+}
 .dash-segmentation-Line {
 	stroke: #D0D0D0;
 	stroke-width: 2px;
