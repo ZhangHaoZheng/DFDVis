@@ -181,6 +181,22 @@ body {
     }
     100% {}
 }
+.right-focus-highlight {
+	animation-name: rhighlight-animation;
+ 	animation-duration: 1s;
+  	animation-timing-function: linear;
+  	animation-iteration-count: infinite;
+}
+@keyframes rhighlight-animation {
+    0% {}
+    50% {
+      	opacity: 0.6;
+     	fill: blue;
+     	stroke: blue;
+     	stroke-width: 2;
+    }
+    100% {}
+}
 .semifocus-highlight {
 	animation-name: semihighlight-animation;
  	animation-duration: 1s;

@@ -24,6 +24,7 @@
     <script src="js/stateGraph.js"></script>
     <script src="js/processGraph.js"></script>
     <script src="js/compareGraph.js"></script>
+    <script src="js/FileHandler.js"></script>
     <!--init begin-->
     <script src="js/main.js"></script>
 </head>
@@ -32,11 +33,16 @@
     <div class="container-fluid">
         <!--主标题栏和提示信息栏-->
         <div class="row-fluid" id="div-syshead">
-            <div class="span10" id="div-systitle">
+            <div class="span10" id="div-systitle" style="width: 70%;">
                 <h2>DFDVis    <small>A system for DFD.</small></h2>
             </div>
-            <div class="span2" id="div-syshelp">
-                <a id="modal" href="#modal-container" role="button" class="btn" data-toggle="modal">About</a>
+            <div class="span2" id="div-syshelp" style="width: 27%;">
+                <a id="modal" href="#modal-container" role="button" class="btn" data-toggle="modal" style="margin-right: 0px;">About</a>
+                <a id="btn-tip" class="btn" style="float: right; margin-top: 30px;">Tips On</a>
+                <a id="btn-save" onclick="Save()" class="btn" style="visibility: hidden; float: right; margin-top: 30px;" >Save</a>
+                <a id="btn-load" class="btn upload" style="visibility: hidden; float: right; margin-top: 30px;">Load
+                    <input class="change" id="loadFile" type="file" multiple="multiple" />
+                </a>
                 <div id="modal-container" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
                     <div class="modal-header">
                         <h2 id="myModalLabel">标题栏</h2>

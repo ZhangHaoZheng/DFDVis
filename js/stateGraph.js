@@ -32,6 +32,7 @@ var stateGraph = {
 	_linesRootOverviewPrefix: "overview-root-line-",
 	_linesPastOverviewPrefix: "overview-past-line-",
 	noTauLinesPrefix: "overview-noTau-line-",
+	_focusClassName: undefined,
 	_ifActionTextVisible: true,
 	_ifRouteFromRootVisivle: true,
 	_ifRouteFromPastVisible: true,
@@ -43,6 +44,12 @@ var stateGraph = {
 	initialize: function(div_id, output, processGraphObject, name) {
 		var self = this;
 		self.name = name;
+		if(self.name === "1") {
+			self._focusClassName = "focus-highlight";
+		}
+		else if(self.name === "2") {
+			self._focusClassName = "right-focus-highlight";
+		}
 		self.stateGraphDivID = div_id;
 		self.stateGraphDetailDivId = div_id + "-detail";
 		self.stateGraphOverviewDivid = div_id + "-overview";
@@ -743,6 +750,18 @@ var stateGraph = {
 				line_source.y += tmp_x * 2 / tmp_m;
 				line2_target.x += tmp_y * 2 / tmp_m;
 				line2_target.y -= tmp_x * 2 / tmp_m;
+				if(line_source.y > line_target.y) {
+					var extent = 3;
+					var p1_x = (line_source.x + line_target.x) / 2 + extent * (line_source.x - line_target.x) / 6;
+					var p1_y = (line_source.y + line_target.y) / 2 - extent * Math.abs(line_source.y - line_target.y) / 6;
+					var p2_x = (line_source.x + line_target.x) / 2 - extent * (line_source.x - line_target.x) / 6;
+					var p2_y = (line_source.y + line_target.y) / 2 - extent * Math.abs(line_source.y - line_target.y) / 6;
+					var final = 'M' + line_source.x + ' ' + line_source.y + ' ' 
+						+ 'C' + p1_x + ' ' + p1_y + ' ' + p2_x + ' ' + p2_y + ' ' + line2_source.x + ' ' + line2_source.y + ' '
+						+ 'C' + p2_x + ' ' + p2_y + ' ' + p1_x + ' ' + p1_y + ' ' + line2_target.x + ' ' + line2_target.y + ' Z';
+					console.log(final);
+					return final;
+				}
 				var d1 = diagonal({source: line_source, target: line_target});
 				var d2 = diagonal({source: line2_source, target: line2_target});
 				var final = d1 + d2.substring(d2.indexOf('C')) + 'Z';
@@ -891,6 +910,14 @@ var stateGraph = {
 				//nothing
 			}
 			else if(node_id == self.rootNode.id) {
+				var tmpL = self._idToNode[node_id].out.length;
+				var tmpMark = [];
+				for(var i = 0; i < tmpL; i++) {
+					if(!tmpMark[self._idToNode[node_id].out[i].action]) {
+						tmpMark[self._idToNode[node_id].out[i].action] = true;
+					}
+				}
+				self.processGraphObject.setAvailableActions(tmpMark);
 				self.processGraphObject.renderView(null);
 			}
 			else {
@@ -898,6 +925,14 @@ var stateGraph = {
 				for(var i = 0; i < self.fromRootShortest.length; i++) {
 					actionList.push(self.fromRootShortest[i].action);
 				}
+				var tmpL = self._idToNode[node_id].out.length;
+				var tmpMark = [];
+				for(var i = 0; i < tmpL; i++) {
+					if(!tmpMark[self._idToNode[node_id].out[i].action]) {
+						tmpMark[self._idToNode[node_id].out[i].action] = true;
+					}
+				}
+				self.processGraphObject.setAvailableActions(tmpMark);
 				self.processGraphObject.renderView(actionList);
 			}
 			//关于processGraph中的动画
@@ -1404,9 +1439,9 @@ var stateGraph = {
 		var self = this;
 		var n = self._idToNode[node_id];
 		self._stateGraph_overview_g.select("#" + self._circlesOverviewPrefix + self._fixTheSelectProblem(node_id))
-						.classed("focus-highlight", true);
+						.classed(self._focusClassName, true);
 		self._stateGraph_detail_g.select("#" + self._circlesPrefix + self._fixTheSelectProblem(node_id))
-						.classed("focus-highlight", true);
+						.classed(self._focusClassName, true);
 		if(!already_tip) {
 			var mark = compareGraph.mouseoverNodeInStateGraph(node_id, self.name);
 			if(mark === false) {
@@ -1453,7 +1488,9 @@ var stateGraph = {
 					+ "</font>";
 			});
 			self._tip.show();
-			self._tip.hide();
+			if(globalTip === false) {
+				self._tip.hide();
+			}
 		}
 
 		function findParentNodesDoTau(node) {
@@ -1495,9 +1532,9 @@ var stateGraph = {
 		//鼠标移开事件
 		var self = this;
 		self._stateGraph_overview_g.select("#" + self._circlesOverviewPrefix + self._fixTheSelectProblem(node_id))
-						.classed("focus-highlight", false);
+						.classed(self._focusClassName, false);
 		self._stateGraph_detail_g.select("#" + self._circlesPrefix + self._fixTheSelectProblem(node_id))
-						.classed("focus-highlight", false);
+						.classed(self._focusClassName, false);
 		if(!already_tip) {
 			compareGraph.mouseoutNodeInStateGraph(node_id, self.name);
 			self._stateGraph_overview_g.selectAll(".semifocus-highlight")
@@ -1520,6 +1557,9 @@ var stateGraph = {
 				+ "</font>";
 		});
 		self._tip.show();
+		if(globalTip === false) {
+			self._tip.hide();
+		}
 	},
 	_mouseoutLink: function(l) {
 		//鼠标移开事件

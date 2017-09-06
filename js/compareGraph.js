@@ -50,10 +50,13 @@ var compareGraph = {
 	_interval: 20,
 	_overview_r: 0,
 	rectlength: 8,
+	_gap: 1,
 	_linesPrefix: "line-",
-	_circlesPrefix: "circle-",
+	_circlesLeftPrefix: "left-circle-",
+	_circlesRightPrefix: "right-circle-",
 	_actionPrefix: "action-",
-	_circlesOverviewPrefix: "overview-circle-",
+	_circlesOverviewLeftPrefix: "overview-left-circle-",
+	_circlesOverviewRightPrefix: "overview-right-circle-",
 	_linesRootOverviewPrefix: "overview-root-line-",
 	_linesPastOverviewPrefix: "overview-past-line-",
 	noTauLinesPrefix: "overview-noTau-line-",
@@ -850,7 +853,8 @@ var compareGraph = {
 			lines.exit()
 				.remove();			
 			var nodesCircle = nodes.filter(function(n) {
-				if(n.ifBalance === 1) {
+				if(n.ifBalance === -1) {
+					//console.log(n);
 					return true;
 				}
 				return false;
@@ -862,46 +866,46 @@ var compareGraph = {
 				return false;
 			});
 			var nodesTri = nodes.filter(function(n) {
-				if(n.ifBalance === 0 && !n.ifStop) {
+				if(n.ifBalance === 0 && !n.ifStop || n.ifBalance === 1) {
 					return true;
 				}
 				return false;
 			});
-			var circles = self._compareGraphDetailSvgG.selectAll(".circle")
+			var circlesL = self._compareGraphDetailSvgG.selectAll(".circle")
 				.data(nodesCircle, function(n) {
 					return n.id;
 				});
-			var circlesL = self._compareGraphDetailSvgG.selectAll(".circleL")
+			var circlesR = self._compareGraphDetailSvgG.selectAll(".circleL")
 				.data(nodesCircle, function(n) {
 					return n.id;
 				});
-			var rectangles = self._compareGraphDetailSvgG.selectAll(".rect")
+			var rectanglesL = self._compareGraphDetailSvgG.selectAll(".rect")
 				.data(nodesRect, function(n) {
 					return n.id;
 				});
-			var rectanglesL = self._compareGraphDetailSvgG.selectAll(".rectL")
+			var rectanglesR = self._compareGraphDetailSvgG.selectAll(".rectL")
 				.data(nodesRect, function(n) {
 					return n.id;
 				});
-			var triangles = self._compareGraphDetailSvgG.selectAll(".triangle")
+			var trianglesL = self._compareGraphDetailSvgG.selectAll(".triangle")
 				.data(nodesTri, function(n) {
 					return n.id;
 				});
-			var trianglesL = self._compareGraphDetailSvgG.selectAll(".triangleL")
+			var trianglesR = self._compareGraphDetailSvgG.selectAll(".triangleL")
 				.data(nodesTri, function(n) {
 					return n.id;
 				});
-			circles.exit()
-				.remove();
 			circlesL.exit()
 				.remove();
-			rectangles.exit()
+			circlesR.exit()
 				.remove();
 			rectanglesL.exit()
 				.remove();
-			triangles.exit()
+			rectanglesR.exit()
 				.remove();
 			trianglesL.exit()
+				.remove();
+			trianglesR.exit()
 				.remove();
 			lines.attr("class", function(l) {
 					transitionMark = true;
@@ -917,116 +921,81 @@ var compareGraph = {
 				.delay(300)
 				.duration(800)
 				.attr("d", _computeWidthOfLine);
-			circles.transition()
-				.delay(300)
-				.duration(800)
-				.attr("class", function(n) {
-					transitionMark = true;
-					var l1 = n.class.length;
-					var classStr = "circle node";
-					for(var i = 0; i < l1; i++) {
-						classStr += (" " + n.class[i]);
-					}
-					return classStr;
-				})
-				.attr("cx", function(n) {
-					return x_linear_detail(n.x);
-				})
-				.attr("cy", function(n) {
-					return y_linear_detail(n.y);
-				});
 			circlesL.transition()
 				.delay(300)
 				.duration(800)
 				.attr("class", function(n) {
 					transitionMark = true;
 					var l1 = n.class.length;
-					var classStr = "circleL node";
+					var classStr = "circle Lnode";
 					for(var i = 0; i < l1; i++) {
 						classStr += (" " + n.class[i]);
 					}
 					return classStr;
 				})
-				.attr("x1", function(n) {
-					return x_linear_detail(n.x);
-				})
-				.attr("y1", function(n) {
-					return y_linear_detail(n.y) - 4;
-				})
-				.attr("x2", function(n) {
-					return x_linear_detail(n.x);
-				})
-				.attr("y2", function(n) {
-					return y_linear_detail(n.y) + 4;
+				.attr("d", function(n) {
+					var cx = x_linear_detail(n.x);
+					var cy = y_linear_detail(n.y);
+					var r = 4;
+					var path = ['M', cx - self._gap, cy - r, 'A', r, r, 0, 1, 0, cx - self._gap, cy + r, 'Z'];
+					return path.join(' ');
 				});
-			rectangles.transition()
+			circlesR.transition()
 				.delay(300)
 				.duration(800)
 				.attr("class", function(n) {
 					transitionMark = true;
 					var l1 = n.class.length;
-					var classStr = "rect node";
+					var classStr = "circleL Rnode";
 					for(var i = 0; i < l1; i++) {
 						classStr += (" " + n.class[i]);
 					}
 					return classStr;
 				})
-				.attr("x", function(n) {
-					return x_linear_detail(n.x) - self.rectlength / 2;
-				})
-				.attr("y", function(n) {
-					return y_linear_detail(n.y) - self.rectlength / 2;
-				})
-				.attr("width", self.rectlength)
-				.attr("height", self.rectlength);
+				.attr("d", function(n) {
+					var cx = x_linear_detail(n.x);
+					var cy = y_linear_detail(n.y);
+					var r = 4;
+					var path = ['M', cx + self._gap, cy - r, 'A', r, r, 0, 1, 1, cx + self._gap, cy + r, 'Z'];
+					return path.join(' ');
+				});
 			rectanglesL.transition()
 				.delay(300)
 				.duration(800)
 				.attr("class", function(n) {
 					transitionMark = true;
 					var l1 = n.class.length;
-					var classStr = "rectL node";
+					var classStr = "rect Lnode";
 					for(var i = 0; i < l1; i++) {
 						classStr += (" " + n.class[i]);
 					}
 					return classStr;
 				})
-				.attr("x1", function(n) {
-					return x_linear_detail(n.x);
+				.attr("x", function(n) {
+					return x_linear_detail(n.x) - self.rectlength / 2 - self._gap;
 				})
-				.attr("y1", function(n) {
+				.attr("y", function(n) {
 					return y_linear_detail(n.y) - self.rectlength / 2;
 				})
-				.attr("x2", function(n) {
-					return x_linear_detail(n.x);
-				})
-				.attr("y2", function(n) {
-					return y_linear_detail(n.y) + self.rectlength / 2;
-				});
-			triangles.transition()
+				.attr("width", self.rectlength / 2)
+				.attr("height", self.rectlength);
+			rectanglesR.transition()
 				.delay(300)
 				.duration(800)
 				.attr("class", function(n) {
 					transitionMark = true;
 					var l1 = n.class.length;
-					var classStr = "triangle node";
+					var classStr = "rectL Rnode";
 					for(var i = 0; i < l1; i++) {
 						classStr += (" " + n.class[i]);
 					}
 					return classStr;
 				})
-				.attr("points", function(n) {
-					var centerX = x_linear_detail(n.x);
-					var centerY = y_linear_detail(n.y);
-					var point1X = centerX;
-					var point1Y = centerY - self.rectlength;
-					var point2X = centerX - self.rectlength / 2 * 1.7;
-					var point2Y = centerY + self.rectlength / 2;
-					var point3X = centerX + self.rectlength / 2 * 1.7;
-					var point3Y = centerY + self.rectlength / 2;
-					return point1X + "," + point1Y + " " 
-						+ point2X + "," + point2Y + " " 
-						+ point3X + "," + point3Y;
+				.attr("x", function(n) {
+					return x_linear_detail(n.x) + self._gap;
+				})
+				.attr("y", function(n) {
+					return y_linear_detail(n.y) - self.rectlength / 2;
 				});
 			trianglesL.transition()
 				.delay(300)
@@ -1034,23 +1003,49 @@ var compareGraph = {
 				.attr("class", function(n) {
 					transitionMark = true;
 					var l1 = n.class.length;
-					var classStr = "triangleL node";
+					var classStr = "triangle Lnode";
 					for(var i = 0; i < l1; i++) {
 						classStr += (" " + n.class[i]);
 					}
 					return classStr;
 				})
-				.attr("x1", function(n) {
-					return x_linear_detail(n.x);
+				.attr("points", function(n) {
+					var centerX = x_linear_detail(n.x) - self._gap;
+					var centerY = y_linear_detail(n.y);
+					var point1X = centerX;
+					var point1Y = centerY - self.rectlength;
+					var point2X = centerX - self.rectlength / 2 * 1.7;
+					var point2Y = centerY + self.rectlength / 2;
+					var point3X = centerX;
+					var point3Y = centerY + self.rectlength / 2;
+					return point1X + "," + point1Y + " " 
+						+ point2X + "," + point2Y + " " 
+						+ point3X + "," + point3Y;
+				});
+			trianglesR.transition()
+				.delay(300)
+				.duration(800)
+				.attr("class", function(n) {
+					transitionMark = true;
+					var l1 = n.class.length;
+					var classStr = "triangleL Rnode";
+					for(var i = 0; i < l1; i++) {
+						classStr += (" " + n.class[i]);
+					}
+					return classStr;
 				})
-				.attr("y1", function(n) {
-					return y_linear_detail(n.y) - self.rectlength;
-				})
-				.attr("x2", function(n) {
-					return x_linear_detail(n.x);
-				})
-				.attr("y2", function(n) {
-					return y_linear_detail(n.y) + self.rectlength / 2;
+				.attr("points", function(n) {
+					var centerX = x_linear_detail(n.x) + self._gap;
+					var centerY = y_linear_detail(n.y);
+					var point1X = centerX;
+					var point1Y = centerY - self.rectlength;
+					var point2X = centerX + self.rectlength / 2 * 1.7;
+					var point2Y = centerY + self.rectlength / 2;
+					var point3X = centerX;
+					var point3Y = centerY + self.rectlength / 2;
+					return point1X + "," + point1Y + " " 
+						+ point2X + "," + point2Y + " " 
+						+ point3X + "," + point3Y;
 				});
 			lines.enter()
 				.insert("path")
@@ -1103,22 +1098,20 @@ var compareGraph = {
 				})
 				.duration(500)
 				.attr("d", _computeWidthOfLine);
-			circles.enter()
-				.append("circle")
+			circlesL.enter()
+				.append("path")
 				.attr("id", function(n) {
-					return self._circlesPrefix + self._fixTheSelectProblem(n.id);
+					return self._circlesLeftPrefix + self._fixTheSelectProblem(n.id);
 				})
 				.attr("CCSid1", function(n) {
 					return n.CCSid1;
 				})
-				.attr("CCSid2", function(n) {
-					return n.CCSid2;
-				})
-				.attr("cx", function(n) {
-					return x_linear_detail(n.x);
-				})
-				.attr("cy", function(n) {
-					return y_linear_detail(n.y);
+				.attr("d", function(n) {
+					var cx = x_linear_detail(n.x);
+					var cy = y_linear_detail(n.y);
+					var r = 4;
+					var path = ['M', cx - self._gap, cy - r, 'A', r, r, 0, 1, 0, cx - self._gap, cy + r, 'Z'];
+					return path.join(' ');
 				})
 				.on("click", function(n) {
 					self._renderNodeLinkView(n.id);
@@ -1138,53 +1131,60 @@ var compareGraph = {
 				})
 				.attr("class", function(n) {
 					var l1 = n.class.length;
-					var classStr = "circle node";
+					var classStr = "circle Lnode";
 					for(var i = 0; i < l1; i++) {
 						classStr += (" " + n.class[i]);
 					}
 					return classStr;
 				});
-			circlesL.enter()
-				.append("line")
-				.attr("class", function(n) {
-					transitionMark = true;
-					var l1 = n.class.length;
-					var classStr = "circleL node";
-					for(var i = 0; i < l1; i++) {
-						classStr += (" " + n.class[i]);
-					}
-					return classStr;
-				})
-				.attr("x1", function(n) {
-					return x_linear_detail(n.x);
-				})
-				.attr("y1", function(n) {
-					return y_linear_detail(n.y) - 4;
-				})
-				.attr("x2", function(n) {
-					return x_linear_detail(n.x);
-				})
-				.attr("y2", function(n) {
-					return y_linear_detail(n.y) + 4;
-				});
-			rectangles.enter()
-				.append("rect")
+			circlesR.enter()
+				.append("path")
 				.attr("id", function(n) {
-					return self._circlesPrefix + self._fixTheSelectProblem(n.id);
-				})
-				.attr("CCSid1", function(n) {
-					return n.CCSid1;
+					return self._circlesRightPrefix + self._fixTheSelectProblem(n.id);
 				})
 				.attr("CCSid2", function(n) {
 					return n.CCSid2;
 				})
+				.attr("class", function(n) {
+					transitionMark = true;
+					var l1 = n.class.length;
+					var classStr = "circleL Rnode";
+					for(var i = 0; i < l1; i++) {
+						classStr += (" " + n.class[i]);
+					}
+					return classStr;
+				})
+				.attr("d", function(n) {
+					var cx = x_linear_detail(n.x);
+					var cy = y_linear_detail(n.y);
+					var r = 4;
+					var path = ['M', cx + self._gap, cy - r, 'A', r, r, 0, 1, 1, cx + self._gap, cy + r, 'Z'];
+					return path.join(' ');
+				})
+				.on("click", function(n) {
+					self._renderNodeLinkView(n.id);
+				})
+				.on("mouseover", function(n) {
+					self._mouseoverNode(n.id);
+				})
+				.on("mouseout", function(n) {
+					self._mouseoutNode(n.id);
+				});
+			rectanglesL.enter()
+				.append("rect")
+				.attr("id", function(n) {
+					return self._circlesLeftPrefix + self._fixTheSelectProblem(n.id);
+				})
+				.attr("CCSid1", function(n) {
+					return n.CCSid1;
+				})
 				.attr("x", function(n) {
-					return x_linear_detail(n.x) - self.rectlength / 2;
+					return x_linear_detail(n.x) - self.rectlength / 2 - self._gap;
 				})
 				.attr("y", function(n) {
 					return y_linear_detail(n.y) - self.rectlength / 2;
 				})
-				.attr("width", self.rectlength)
+				.attr("width", self.rectlength / 2)
 				.attr("height", self.rectlength)
 				.on("click", function(n) {
 					self._renderNodeLinkView(n.id);
@@ -1204,54 +1204,62 @@ var compareGraph = {
 				})
 				.attr("class", function(n) {
 					var l1 = n.class.length;
-					var classStr = "rect node";
+					var classStr = "rect Lnode";
 					for(var i = 0; i < l1; i++) {
 						classStr += (" " + n.class[i]);
 					}
 					return classStr;
 				});
-			rectanglesL.enter()
-				.append("line")
-				.attr("class", function(n) {
-					transitionMark = true;
-					var l1 = n.class.length;
-					var classStr = "rectL node";
-					for(var i = 0; i < l1; i++) {
-						classStr += (" " + n.class[i]);
-					}
-					return classStr;
-				})
-				.attr("x1", function(n) {
-					return x_linear_detail(n.x);
-				})
-				.attr("y1", function(n) {
-					return y_linear_detail(n.y) - self.rectlength / 2;
-				})
-				.attr("x2", function(n) {
-					return x_linear_detail(n.x);
-				})
-				.attr("y2", function(n) {
-					return y_linear_detail(n.y) + self.rectlength / 2;
-				});
-			triangles.enter()
-				.append("polygon")
+			rectanglesR.enter()
+				.append("rect")
 				.attr("id", function(n) {
-					return self._circlesPrefix + self._fixTheSelectProblem(n.id);
-				})
-				.attr("CCSid1", function(n) {
-					return n.CCSid1;
+					return self._circlesRightPrefix + self._fixTheSelectProblem(n.id);
 				})
 				.attr("CCSid2", function(n) {
 					return n.CCSid2;
 				})
+				.attr("class", function(n) {
+					transitionMark = true;
+					var l1 = n.class.length;
+					var classStr = "rectL Rnode";
+					for(var i = 0; i < l1; i++) {
+						classStr += (" " + n.class[i]);
+					}
+					return classStr;
+				})
+				.attr("x", function(n) {
+					return x_linear_detail(n.x) + self._gap;
+				})
+				.attr("y", function(n) {
+					return y_linear_detail(n.y) - self.rectlength / 2;
+				})
+				.attr("width", self.rectlength / 2)
+				.attr("height", self.rectlength)
+				.on("click", function(n) {
+					self._renderNodeLinkView(n.id);
+				})
+				.on("mouseover", function(n) {
+					self._mouseoverNode(n.id);
+				})
+				.on("mouseout", function(n) {
+					self._mouseoutNode(n.id);
+				});
+			trianglesL.enter()
+				.append("polygon")
+				.attr("id", function(n) {
+					return self._circlesLeftPrefix + self._fixTheSelectProblem(n.id);
+				})
+				.attr("CCSid1", function(n) {
+					return n.CCSid1;
+				})
 				.attr("points", function(n) {
-					var centerX = x_linear_detail(n.x);
+					var centerX = x_linear_detail(n.x) - self._gap;
 					var centerY = y_linear_detail(n.y);
 					var point1X = centerX;
 					var point1Y = centerY - self.rectlength;
 					var point2X = centerX - self.rectlength / 2 * 1.7;
 					var point2Y = centerY + self.rectlength / 2;
-					var point3X = centerX + self.rectlength / 2 * 1.7;
+					var point3X = centerX;
 					var point3Y = centerY + self.rectlength / 2;
 					return point1X + "," + point1Y + " " 
 						+ point2X + "," + point2Y + " " 
@@ -1275,34 +1283,50 @@ var compareGraph = {
 				})
 				.attr("class", function(n) {
 					var l1 = n.class.length;
-					var classStr = "triangle node";
+					var classStr = "triangle Lnode";
 					for(var i = 0; i < l1; i++) {
 						classStr += (" " + n.class[i]);
 					}
 					return classStr;
 				});
-			trianglesL.enter()
-				.append("line")
+			trianglesR.enter()
+				.append("polygon")
+				.attr("id", function(n) {
+					return self._circlesRightPrefix + self._fixTheSelectProblem(n.id);
+				})
+				.attr("CCSid2", function(n) {
+					return n.CCSid2;
+				})
 				.attr("class", function(n) {
 					transitionMark = true;
 					var l1 = n.class.length;
-					var classStr = "triangleL node";
+					var classStr = "triangleL Rnode";
 					for(var i = 0; i < l1; i++) {
 						classStr += (" " + n.class[i]);
 					}
 					return classStr;
 				})
-				.attr("x1", function(n) {
-					return x_linear_detail(n.x);
+				.attr("points", function(n) {
+					var centerX = x_linear_detail(n.x) + self._gap;
+					var centerY = y_linear_detail(n.y);
+					var point1X = centerX;
+					var point1Y = centerY - self.rectlength;
+					var point2X = centerX + self.rectlength / 2 * 1.7;
+					var point2Y = centerY + self.rectlength / 2;
+					var point3X = centerX;
+					var point3Y = centerY + self.rectlength / 2;
+					return point1X + "," + point1Y + " " 
+						+ point2X + "," + point2Y + " " 
+						+ point3X + "," + point3Y;
 				})
-				.attr("y1", function(n) {
-					return y_linear_detail(n.y) - self.rectlength;
+				.on("click", function(n) {
+					self._renderNodeLinkView(n.id);
 				})
-				.attr("x2", function(n) {
-					return x_linear_detail(n.x);
+				.on("mouseover", function(n) {
+					self._mouseoverNode(n.id);
 				})
-				.attr("y2", function(n) {
-					return y_linear_detail(n.y) + self.rectlength / 2;
+				.on("mouseout", function(n) {
+					self._mouseoutNode(n.id);
 				});
 
 			var line_actions = links.filter(function(l) {
@@ -1373,6 +1397,17 @@ var compareGraph = {
 				line_source.y += tmp_x * 2 / tmp_m;
 				line2_target.x += tmp_y * 2 / tmp_m;
 				line2_target.y -= tmp_x * 2 / tmp_m;
+				if(line_source.y > line_target.y) {
+					var extent = 3;
+					var p1_x = (line_source.x + line_target.x) / 2 + extent * (line_source.x - line_target.x) / 6;
+					var p1_y = (line_source.y + line_target.y) / 2 - extent * Math.abs(line_source.y - line_target.y) / 6;
+					var p2_x = (line_source.x + line_target.x) / 2 - extent * (line_source.x - line_target.x) / 6;
+					var p2_y = (line_source.y + line_target.y) / 2 - extent * Math.abs(line_source.y - line_target.y) / 6;
+					var final = 'M' + line_source.x + ' ' + line_source.y + ' ' 
+						+ 'C' + p1_x + ' ' + p1_y + ' ' + p2_x + ' ' + p2_y + ' ' + line2_source.x + ' ' + line2_source.y + ' '
+						+ 'C' + p2_x + ' ' + p2_y + ' ' + p1_x + ' ' + p1_y + ' ' + line2_target.x + ' ' + line2_target.y + ' Z';
+					return final;
+				}
 				var d1 = diagonal({source: line_source, target: line_target});
 				var d2 = diagonal({source: line2_source, target: line2_target});
 				var final = d1 + d2.substring(d2.indexOf('C')) + 'Z';
@@ -1399,45 +1434,42 @@ var compareGraph = {
 		function _drawCompareGraphOverview() {
 			//作图overview
 			var nodesCircle = self._overview_nodes.filter(function(n) {
-				if(n.ifBalance === 1) {
+				if(n.ifBalance === -1) {
 					return true;
 				}
 				return false;
 			});
-			var circles = self._compareGraphOverviewSvgG.selectAll(".circle")
+			var circlesL = self._compareGraphOverviewSvgG.selectAll(".circle")
 				.data(nodesCircle, function(n) {
 					return n.id;
 				});
-			var circlesL = self._compareGraphOverviewSvgG.selectAll(".circleL")
+			var circlesR = self._compareGraphOverviewSvgG.selectAll(".circleL")
 				.data(nodesCircle, function(n) {
 					return n.id;
 				});
-			circles.exit()
-				.remove();
 			circlesL.exit()
 				.remove();
-			circles.enter()
-				.append("circle")
+			circlesR.exit()
+				.remove();
+			circlesL.enter()
+				.append("path")
 				.attr("id", function(n) {
-					return self._circlesOverviewPrefix + self._fixTheSelectProblem(n.id);
+					return self._circlesOverviewLeftPrefix + self._fixTheSelectProblem(n.id);
 				})
 				.attr("CCSid1", function(n) {
 					return n.CCSid1;
 				})
-				.attr("CCSid2", function(n) {
-					return n.CCSid2;
+				.attr("d", function(n) {
+					var cx = n.overview_x;
+					var cy = n.overview_y;
+					var r = self._overview_r;
+					var path = ['M', cx - self._gap, cy - r, 'A', r, r, 0, 1, 0, cx - self._gap, cy + r, 'Z'];
+					return path.join(' ');
 				})
-				.attr("cx", function(n) {
-					return n.overview_x;
-				})
-				.attr("cy", function(n) {
-					return n.overview_y;
-				})
-				.style("r", self._overview_r)
 				.attr("class", function(n) {
 					if(self.nodesNow[n.id] == true) {
 						var l1 = n.class.length;
-						var classStr = "circle node";
+						var classStr = "circle Lnode";
 						for(var i = 0; i < l1; i++) {
 							classStr += (" " + n.class[i]);
 						}
@@ -1448,8 +1480,8 @@ var compareGraph = {
 						return classStr;
 					}
 				})
+
 				.on("click", function(n) {
-					console.log(n);
 					self._renderNodeLinkView(n.id);
 				})
 				.on("mouseover", function(n) {
@@ -1458,12 +1490,18 @@ var compareGraph = {
 				.on("mouseout", function(n) {
 					self._mouseoutNode(n.id);
 				});
-			circlesL.enter()
-				.append("line")
+			circlesR.enter()
+				.append("path")
+				.attr("id", function(n) {
+					return self._circlesOverviewRightPrefix + self._fixTheSelectProblem(n.id);
+				})
+				.attr("CCSid2", function(n) {
+					return n.CCSid2;
+				})
 				.attr("class", function(n) {
 					if(self.nodesNow[n.id] == true) {
 						var l1 = n.class.length;
-						var classStr = "circleL node";
+						var classStr = "circleL Rnode";
 						for(var i = 0; i < l1; i++) {
 							classStr += (" " + n.class[i]);
 						}
@@ -1474,50 +1512,21 @@ var compareGraph = {
 						return classStr;
 					}
 				})
-				.attr("x1", function(n) {
-					return n.overview_x;
+				.attr("d", function(n) {
+					var cx = n.overview_x;
+					var cy = n.overview_y;
+					var r = self._overview_r;
+					var path = ['M', cx + self._gap, cy - r, 'A', r, r, 0, 1, 1, cx + self._gap, cy + r, 'Z'];
+					return path.join(' ');
 				})
-				.attr("y1", function(n) {
-					return n.overview_y - self._overview_r;
+				.on("click", function(n) {
+					self._renderNodeLinkView(n.id);
 				})
-				.attr("x2", function(n) {
-					return n.overview_x;
+				.on("mouseover", function(n) {
+					self._mouseoverNode(n.id);
 				})
-				.attr("y2", function(n) {
-					return n.overview_y + self._overview_r;
-				});
-			circles.transition()
-				.delay(function(n) {
-					if(self.nodesNow[n.id] == false) {
-						return 0;
-					}
-					else if(self.nodesPast != undefined && self.nodesPast[n.id] == true) {
-						return 300;
-					}
-					else {
-						if(transitionMark == false) {
-							return 0;
-						}
-						else return 1100;
-					}
-				})
-				.attr("class", function(n) {
-					if(self.nodesNow[n.id] == true) {
-						var l1 = n.class.length;
-						var classStr = "circle node";
-						for(var i = 0; i < l1; i++) {
-							classStr += (" " + n.class[i]);
-						}
-						return classStr;
-					}
-					else if(self.nodePast != n.id) {
-						var classStr = "circle undrawedNode node";
-						return classStr;
-					}
-					else {
-						var classStr = "circle pastNode undrawedNode node";
-						return classStr;
-					}
+				.on("mouseout", function(n) {
+					self._mouseoutNode(n.id);
 				});
 			circlesL.transition()
 				.delay(function(n) {
@@ -1537,7 +1546,40 @@ var compareGraph = {
 				.attr("class", function(n) {
 					if(self.nodesNow[n.id] == true) {
 						var l1 = n.class.length;
-						var classStr = "circleL node";
+						var classStr = "circle Lnode";
+						for(var i = 0; i < l1; i++) {
+							classStr += (" " + n.class[i]);
+						}
+						return classStr;
+					}
+					else if(self.nodePast != n.id) {
+						var classStr = "circle undrawedNode node";
+						return classStr;
+					}
+					else {
+						var classStr = "circle pastNode undrawedNode node";
+						return classStr;
+					}
+				});
+			circlesR.transition()
+				.delay(function(n) {
+					if(self.nodesNow[n.id] == false) {
+						return 0;
+					}
+					else if(self.nodesPast != undefined && self.nodesPast[n.id] == true) {
+						return 300;
+					}
+					else {
+						if(transitionMark == false) {
+							return 0;
+						}
+						else return 1100;
+					}
+				})
+				.attr("class", function(n) {
+					if(self.nodesNow[n.id] == true) {
+						var l1 = n.class.length;
+						var classStr = "circleL Rnode";
 						for(var i = 0; i < l1; i++) {
 							classStr += (" " + n.class[i]);
 						}
@@ -1558,36 +1600,33 @@ var compareGraph = {
 				}
 				return false;
 			});
-			var rectangles = self._compareGraphOverviewSvgG.selectAll(".rect")
+			var rectanglesL = self._compareGraphOverviewSvgG.selectAll(".rect")
 				.data(nodesRect, function(n) {
 					return n.id;
 				});
-			var rectanglesL = self._compareGraphOverviewSvgG.selectAll(".rectL")
+			var rectanglesR = self._compareGraphOverviewSvgG.selectAll(".rectL")
 				.data(nodesRect, function(n) {
 					return n.id;
 				});
-			rectangles.exit()
-				.remove();
 			rectanglesL.exit()
 				.remove();
-			rectangles.enter()
+			rectanglesR.exit()
+				.remove();
+			rectanglesL.enter()
 				.append("rect")
 				.attr("id", function(n) {
-					return self._circlesOverviewPrefix + self._fixTheSelectProblem(n.id);
+					return self._circlesOverviewLeftPrefix + self._fixTheSelectProblem(n.id);
 				})
 				.attr("CCSid1", function(n) {
 					return n.CCSid1;
 				})
-				.attr("CCSid2", function(n) {
-					return n.CCSid2;
-				})
 				.attr("x", function(n) {
-					return n.overview_x - self.rectlength / 2;
+					return n.overview_x - self.rectlength / 2 - self._gap;
 				})
 				.attr("y", function(n) {
 					return n.overview_y - self.rectlength / 2;
 				})
-				.attr("width", self.rectlength)
+				.attr("width", self.rectlength / 2)
 				.attr("height", self.rectlength)
 				.on("click", function(n) {
 					self._renderNodeLinkView(n.id);
@@ -1608,7 +1647,7 @@ var compareGraph = {
 				.attr("class", function(n) {
 					if(self.nodesNow[n.id] == true) {
 						var l1 = n.class.length;
-						var classStr = "rect node";
+						var classStr = "rect Lnode";
 						for(var i = 0; i < l1; i++) {
 							classStr += (" " + n.class[i]);
 						}
@@ -1619,12 +1658,18 @@ var compareGraph = {
 						return classStr;
 					}
 				});
-			rectanglesL.enter()
-				.append("line")
+			rectanglesR.enter()
+				.append("rect")
+				.attr("id", function(n) {
+					return self._circlesOverviewRightPrefix + self._fixTheSelectProblem(n.id);
+				})
+				.attr("CCSid2", function(n) {
+					return n.CCSid2;
+				})
 				.attr("class", function(n) {
 					if(self.nodesNow[n.id] == true) {
 						var l1 = n.class.length;
-						var classStr = "rectL node";
+						var classStr = "rectL Rnode";
 						for(var i = 0; i < l1; i++) {
 							classStr += (" " + n.class[i]);
 						}
@@ -1635,25 +1680,30 @@ var compareGraph = {
 						return classStr;
 					}
 				})
-				.attr("x1", function(n) {
-					return n.overview_x;
+				.attr("x", function(n) {
+					return n.overview_x + self._gap;
 				})
-				.attr("y1", function(n) {
+				.attr("y", function(n) {
 					return n.overview_y - self.rectlength / 2;
 				})
-				.attr("x2", function(n) {
-					return n.overview_x;
+				.attr("width", self.rectlength / 2)
+				.attr("height", self.rectlength)
+				.on("click", function(n) {
+					self._renderNodeLinkView(n.id);
 				})
-				.attr("y2", function(n) {
-					return n.overview_y + self.rectlength / 2;
+				.on("mouseover", function(n) {
+					self._mouseoverNode(n.id);
+				})
+				.on("mouseout", function(n) {
+					self._mouseoutNode(n.id);
 				});
-			rectangles.transition()
+			rectanglesL.transition()
 				.delay(300)
 				.duration(800)
 				.attr("class", function(n) {
 					if(self.nodesNow[n.id] == true) {
 						var l1 = n.class.length;
-						var classStr = "rect node";
+						var classStr = "rect Lnode";
 						for(var i = 0; i < l1; i++) {
 							classStr += (" " + n.class[i]);
 						}
@@ -1668,13 +1718,13 @@ var compareGraph = {
 						return classStr;
 					}
 				});
-			rectanglesL.transition()
+			rectanglesR.transition()
 				.delay(300)
 				.duration(800)
 				.attr("class", function(n) {
 					if(self.nodesNow[n.id] == true) {
 						var l1 = n.class.length;
-						var classStr = "rectL node";
+						var classStr = "rectL Rnode";
 						for(var i = 0; i < l1; i++) {
 							classStr += (" " + n.class[i]);
 						}
@@ -1690,42 +1740,39 @@ var compareGraph = {
 					}
 				});
 			var nodesTri = self._overview_nodes.filter(function(n) {
-				if(n.ifBalance === 0 && !n.ifStop) {
+				if(n.ifBalance === 0 && !n.ifStop || n.ifBalance === 1) {
 					return true;
 				}
 				return false;
 			});
-			var triangles = self._compareGraphOverviewSvgG.selectAll(".triangle")
+			var trianglesL = self._compareGraphOverviewSvgG.selectAll(".triangle")
 				.data(nodesTri, function(n) {
 					return n.id;
 				});
-			var trianglesL = self._compareGraphOverviewSvgG.selectAll(".triangleL")
+			var trianglesR = self._compareGraphOverviewSvgG.selectAll(".triangleL")
 				.data(nodesTri, function(n) {
 					return n.id;
 				});
-			triangles.exit()
-				.remove();
 			trianglesL.exit()
 				.remove();
-			triangles.enter()
+			trianglesR.exit()
+				.remove();
+			trianglesL.enter()
 				.append("polygon")
 				.attr("id", function(n) {
-					return self._circlesOverviewPrefix + self._fixTheSelectProblem(n.id);
+					return self._circlesOverviewLeftPrefix + self._fixTheSelectProblem(n.id);
 				})
 				.attr("CCSid1", function(n) {
 					return n.CCSid1;
 				})
-				.attr("CCSid2", function(n) {
-					return n.CCSid2;
-				})
 				.attr("points", function(n) {
-					var centerX = n.overview_x;
+					var centerX = n.overview_x - self._gap;
 					var centerY = n.overview_y;
 					var point1X = centerX;
 					var point1Y = centerY - self.rectlength;
 					var point2X = centerX - self.rectlength / 2 * 1.7;
 					var point2Y = centerY + self.rectlength / 2;
-					var point3X = centerX + self.rectlength / 2 * 1.7;
+					var point3X = centerX;
 					var point3Y = centerY + self.rectlength / 2;
 					return point1X + "," + point1Y + " " 
 						+ point2X + "," + point2Y + " " 
@@ -1750,7 +1797,7 @@ var compareGraph = {
 				.attr("class", function(n) {
 					if(self.nodesNow[n.id] == true) {
 						var l1 = n.class.length;
-						var classStr = "triangle node";
+						var classStr = "triangle Lnode";
 						for(var i = 0; i < l1; i++) {
 							classStr += (" " + n.class[i]);
 						}
@@ -1761,12 +1808,18 @@ var compareGraph = {
 						return classStr;
 					}
 				});
-			trianglesL.enter()
-				.append("line")
+			trianglesR.enter()
+				.append("polygon")
+				.attr("id", function(n) {
+					return self._circlesOverviewRightPrefix + self._fixTheSelectProblem(n.id);
+				})
+				.attr("CCSid2", function(n) {
+					return n.CCSid2;
+				})
 				.attr("class", function(n) {
 					if(self.nodesNow[n.id] == true) {
 						var l1 = n.class.length;
-						var classStr = "triangleL node";
+						var classStr = "triangleL Rnode";
 						for(var i = 0; i < l1; i++) {
 							classStr += (" " + n.class[i]);
 						}
@@ -1777,25 +1830,35 @@ var compareGraph = {
 						return classStr;
 					}
 				})
-				.attr("x1", function(n) {
-					return n.overview_x;
+				.attr("points", function(n) {
+					var centerX = n.overview_x + self._gap;
+					var centerY = n.overview_y;
+					var point1X = centerX;
+					var point1Y = centerY - self.rectlength;
+					var point2X = centerX + self.rectlength / 2 * 1.7;
+					var point2Y = centerY + self.rectlength / 2;
+					var point3X = centerX;
+					var point3Y = centerY + self.rectlength / 2;
+					return point1X + "," + point1Y + " " 
+						+ point2X + "," + point2Y + " " 
+						+ point3X + "," + point3Y;
 				})
-				.attr("y1", function(n) {
-					return n.overview_y - self.rectlength;
+				.on("click", function(n) {
+					self._renderNodeLinkView(n.id);
 				})
-				.attr("x2", function(n) {
-					return n.overview_x;
+				.on("mouseover", function(n) {
+					self._mouseoverNode(n.id);
 				})
-				.attr("y2", function(n) {
-					return n.overview_y + self.rectlength / 2;
+				.on("mouseout", function(n) {
+					self._mouseoutNode(n.id);
 				});
-			triangles.transition()
+			trianglesL.transition()
 				.delay(300)
 				.duration(800)
 				.attr("class", function(n) {
 					if(self.nodesNow[n.id] == true) {
 						var l1 = n.class.length;
-						var classStr = "triangle node";
+						var classStr = "triangle Lnode";
 						for(var i = 0; i < l1; i++) {
 							classStr += (" " + n.class[i]);
 						}
@@ -1810,13 +1873,13 @@ var compareGraph = {
 						return classStr;
 					}
 				});
-			trianglesL.transition()
+			trianglesR.transition()
 				.delay(300)
 				.duration(800)
 				.attr("class", function(n) {
 					if(self.nodesNow[n.id] == true) {
 						var l1 = n.class.length;
-						var classStr = "triangleL node";
+						var classStr = "triangleL Rnode";
 						for(var i = 0; i < l1; i++) {
 							classStr += (" " + n.class[i]);
 						}
@@ -2015,6 +2078,9 @@ var compareGraph = {
 				+ "</font>";
 		});
 		self._tip.show();
+		if(globalTip === false) {
+			self._tip.hide();
+		}
 	},
 	_mouseoutLink: function(l) {
 		//鼠标移开事件
@@ -2025,10 +2091,16 @@ var compareGraph = {
 		//鼠标悬浮节点事件
 		var self = this;
 		var n = self._idToNode[node_id];
-		self._compareGraphOverviewSvgG.select("#" + self._circlesOverviewPrefix + self._fixTheSelectProblem(node_id))
+		self._compareGraphOverviewSvgG.select("#" + self._circlesOverviewLeftPrefix + self._fixTheSelectProblem(node_id))
 						.classed("focus-highlight", true);
-		self._compareGraphDetailSvgG.select("#" + self._circlesPrefix + self._fixTheSelectProblem(node_id))
-						.classed("focus-highlight", true);
+		self._compareGraphDetailSvgG.select("#" + self._circlesLeftPrefix + self._fixTheSelectProblem(node_id))
+						.classed("focus-highlight", true);	
+		self._compareGraphOverviewSvgG.select("#" + self._circlesOverviewRightPrefix + self._fixTheSelectProblem(node_id))
+						.classed("right-focus-highlight", true);
+		self._compareGraphDetailSvgG.select("#" + self._circlesRightPrefix + self._fixTheSelectProblem(node_id))
+						.classed("right-focus-highlight", true);
+		stateGraph1.mouseoverNode(n.CCSid1, true);
+		stateGraph2.mouseoverNode(n.CCSid2, true);
 		self._tip.html(function() {
 			return "<b>the first CCS definition: </b><font color=\"#FF6347\">" 
 				+ n.CCSid1 
@@ -2040,18 +2112,23 @@ var compareGraph = {
 				+ n.maxdepth 
 				+ "</font>";
 		});
-		stateGraph1.mouseoverNode(n.CCSid1, true);
-		stateGraph2.mouseoverNode(n.CCSid2, true);
 		self._tip.show();
+		if(globalTip === false) {
+			self._tip.hide();
+		}
 	},
 	_mouseoutNode: function(node_id) {
 		//鼠标移开事件
 		var self = this;
 		var n = self._idToNode[node_id];
-		self._compareGraphOverviewSvgG.select("#" + self._circlesOverviewPrefix + self._fixTheSelectProblem(node_id))
+		self._compareGraphOverviewSvgG.select("#" + self._circlesOverviewLeftPrefix + self._fixTheSelectProblem(node_id))
 						.classed("focus-highlight", false);
-		self._compareGraphDetailSvgG.select("#" + self._circlesPrefix + self._fixTheSelectProblem(node_id))
-						.classed("focus-highlight", false);
+		self._compareGraphDetailSvgG.select("#" + self._circlesLeftPrefix + self._fixTheSelectProblem(node_id))
+						.classed("focus-highlight", false);	
+		self._compareGraphOverviewSvgG.select("#" + self._circlesOverviewRightPrefix + self._fixTheSelectProblem(node_id))
+						.classed("right-focus-highlight", false);
+		self._compareGraphDetailSvgG.select("#" + self._circlesRightPrefix + self._fixTheSelectProblem(node_id))
+						.classed("right-focus-highlight", false);
 		stateGraph1.mouseoutNode(n.CCSid1, true);
 		stateGraph2.mouseoutNode(n.CCSid2, true);
 		self._tip.hide();
@@ -2168,23 +2245,29 @@ var compareGraph = {
 	mouseoverNodeInStateGraph: function(id, name) {
 		var self = this;
 		var CCSid;
+		var nodeClass;
 		var mark = false;
+		var className;
 		if(name === "1") {
 			CCSid = "CCSid1";
+			nodeClass = "Lnode";
+			className = "focus-highlight";
 		}
 		else if(name === "2") {
 			CCSid = "CCSid2";
+			nodeClass = "Rnode";
+			className = "right-focus-highlight";
 		}
-		self._compareGraphDetailSvgG.selectAll(".node")
-			.classed("focus-highlight", function(n) {
+		self._compareGraphDetailSvgG.selectAll("." + nodeClass)
+			.classed(className, function(n) {
 				if(n[CCSid] === id) {
 					mark = true;
 					return true;
 				}
 				return false;
 			});
-		self._compareGraphOverviewSvgG.selectAll(".node")
-			.classed("focus-highlight", function(n) {
+		self._compareGraphOverviewSvgG.selectAll("." + nodeClass)
+			.classed(className, function(n) {
 				if(n[CCSid] === id) {
 					mark = true;
 					return true;
@@ -2195,10 +2278,14 @@ var compareGraph = {
 	},
 	mouseoutNodeInStateGraph: function(id, name) {
 		var self = this;
-		self._compareGraphDetailSvgG.selectAll(".node")
+		self._compareGraphDetailSvgG.selectAll(".Lnode")
 			.classed("focus-highlight", false);
-		self._compareGraphOverviewSvgG.selectAll(".node")
+		self._compareGraphOverviewSvgG.selectAll(".Lnode")
 			.classed("focus-highlight", false);
+		self._compareGraphDetailSvgG.selectAll(".Rnode")
+			.classed("right-focus-highlight", false);
+		self._compareGraphOverviewSvgG.selectAll(".Rnode")
+			.classed("right-focus-highlight", false);
 	},
 	ifDrawedInCompareGraph: function(id, name) {
 		var self = this;
@@ -2521,6 +2608,9 @@ part*/
 				+ "</font>";
 		});
 		self._tip.show();
+		if(globalTip === false) {
+			self._tip.hide();
+		}
 		stateGraph1.mouseoverNode(CCS1, true);
 		stateGraph2.mouseoverNode(CCS2, true);
 	},
@@ -2540,6 +2630,9 @@ part*/
 			return "<b>action: </b><font color=\"#FF6347\">" + action + "</font>";
 		});
 		self._tip.show();
+		if(globalTip === false) {
+			self._tip.hide();
+		}
 	},
 	mouseoutLine: function(l) {
 		var self = this;

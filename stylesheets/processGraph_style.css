@@ -43,7 +43,7 @@
 	stroke-width: 1;
 }
 .satisfied-Node {
-	fill: #E0E0E0;
+	fill: #9e9e9e;
 }
 .unsatisfied-Node {
 	fill: white;
@@ -82,6 +82,7 @@
     50% {
       	opacity: 1;
      	stroke-width: 2;
+     	stroke: #D94600;
     }
     100% {}
 }

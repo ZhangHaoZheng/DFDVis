@@ -1,10 +1,13 @@
 //显示tips，可以设置要提示的内容
+
+var globalTip = true;
 function ShowTips(tipStr) {
     $("#tipcontent").text(tipStr);
     $("#errortip").show();
 }
 
 function SendDfdObjToServer(dfdObj, dfdIndex) {
+    console.log(JSON.stringify(dfdObj));
     $.ajax({
         type: "POST",
         url: "http://xiongbear.cn:3000/dfdvis",
@@ -45,6 +48,7 @@ function SendDfdObjToServer(dfdObj, dfdIndex) {
     });
 }
 
+var flowChartReturn = null;
 $(document).ready(function() {
     //整个页面的初始化部分
 
@@ -139,7 +143,16 @@ $(document).ready(function() {
             $(".flowchart-example-container").height(currentAccordionDivHeight);
         }
     });
-
+    //提示框（不）显示
+    $("#btn-tip").click(function() {
+        globalTip = !globalTip;
+        if(globalTip === true) {
+            $("#btn-tip").html("Tips On");
+        }
+        else {
+            $("#btn-tip").html("Tips Off");
+        }
+    });
     //tips关闭
     $("#tipclose").click(function() {
         $("#errortip").hide();
@@ -188,7 +201,7 @@ $(document).ready(function() {
 
     //btn-submit
     $("#btn-submit").click(function() {
-        var flowChartReturn = flowChartSubmit();
+        flowChartReturn = flowChartSubmit();
         if (flowChartReturn != 0) {
             console.log("***Ready to send to the server***");
             console.log(flowChartReturn);
@@ -210,6 +223,8 @@ $(document).ready(function() {
     $("#btn-retract").click(function() {
         retract();
     });
+    var btnLoad = document.getElementById('loadFile');
+    btnLoad.addEventListener('change', handleFileSelect, false);
     //初始化流图输入
     initFlowchart();
 });

@@ -4,6 +4,7 @@ var processGraph = {
 	processGraphSvgID: undefined,
 	processGraphRightDivID: undefined,
 	processGraphSvgG: undefined,
+	availableActions: undefined,
 	actionListFromPast: undefined,
 	actionListFromRoot: undefined,
 	previousActionListFromRoot: undefined,
@@ -45,6 +46,7 @@ var processGraph = {
 			self.actionListFromPast = [];
 			self.actionListFromRoot = [];
 			self.previousActionListFromRoot = [];
+			self.availableActions = [];
 			self._nodeArray = undefined;
 			self._lineArray = undefined;
 			self._IDtoNode = undefined;
@@ -61,7 +63,7 @@ var processGraph = {
 		textDiv.append("br");
 		textDiv.append("text")
 			.style("font-weight", "bold")
-			.text("Repetitions");
+			.text("Availability");
 		spanDiv = d3.select("#" + self.processGraphRightDivID)
 			.append("div")
 			.style("width", "80%")
@@ -74,8 +76,8 @@ var processGraph = {
 			.style("opacity", 0.7)
 			.style("float", "left");
 		spanDiv.append("text")
-			.style("font-weight", "bold")
-			.html("&nbsp&nbsp&nbsp0");
+		//	.style("font-weight", "bold")
+			.html("&nbsp&nbsp&nbspF");
 		spanDiv.append("br");
 		spanDiv.append("div")
 			.style("height", "20px")
@@ -84,9 +86,9 @@ var processGraph = {
 			.style("opacity", 0.7)
 			.style("float", "left");
 		spanDiv.append("text")
-			.style("font-weight", "bold")
-			.html("&nbsp&nbsp&nbsp1");
-		spanDiv.append("br");
+		//	.style("font-weight", "bold")
+			.html("&nbsp&nbsp&nbspT");
+		/*spanDiv.append("br");
 		spanDiv.append("div")
 			.style("height", "20px")
 			.style("width", "20px")
@@ -95,7 +97,7 @@ var processGraph = {
 			.style("float", "left");
 		spanDiv.append("text")
 			.style("font-weight", "bold")
-			.html("&nbsp&nbsp&nbsp>2");
+			.html("&nbsp&nbsp&nbsp>2");*/
 	},
 	_translateToGraph: function(dfdDefine) {
 		//转换形式，生成_nodeArray,_lineArray
@@ -391,6 +393,10 @@ var processGraph = {
 		var self = this;
 		self.actionListFromPast = actionList;
 	},
+	setAvailableActions: function(actions) {
+		var self = this;
+		self.availableActions = actions;
+	},
 	_processAnimate: function(actionList, ifFromPast) {
 		var self = this;
 		if(ifFromPast === true && actionList.length == 0) {
@@ -403,12 +409,12 @@ var processGraph = {
 			self._IDtoLine[l].previousCount = self._IDtoLine[l].count;
 			self._IDtoLine[l].count = 0;
 		}
-		if(ifFromPast === true) {
+		/*if(ifFromPast === true) {
 			self.renderView(self.previousActionListFromRoot, true);
 		}
 		else {
 			self.renderView([], true);
-		}
+		}*/
 		_animate();
 		for(l in self._IDtoLine) {
 			self._IDtoLine[l].count = self._IDtoLine[l].previousCount;
@@ -422,14 +428,15 @@ var processGraph = {
 				self._IDtoLine[action].count ++;
 				//source node
 				if(action.substring(0, 5) != "input") {
-					if(self._calculateNodeState(self._IDtoLine[action].source) === false) {
+					/*if(self._calculateNodeState(self._IDtoLine[action].source) === false) {
 						ifchanged = (self._IDtoLine[action].source.class != " unsatisfied-Node");
 						self._IDtoLine[action].source.class = " unsatisfied-Node";
 					}
 					else {
 						ifchanged = (self._IDtoLine[action].source.class != " satisfied-Node");
 						self._IDtoLine[action].source.class = " satisfied-Node";
-					}
+					}*/
+					ifchanged = true;
 				}
 				if(ifchanged === true) {
 					var tmpID = self._circlesProcessPrefix + self._IDtoLine[action].source.id;
@@ -446,12 +453,12 @@ var processGraph = {
 				//line action
 				ifchanged = false;
 				if(action.substring(0, 5) != "input" && action.substring(0, 6) != "output") {
-					if(self._IDtoLine[action].count == 1) {
+					/*if(self._IDtoLine[action].count == 1) {
 						self._IDtoLine[action].class = " one-time-line";
 					}
 					else {
 						self._IDtoLine[action].class = " moreThanTwo-time-line";
-					}
+					}*/
 					ifchanged = true;
 				}
 				if(ifchanged === true) {
@@ -468,14 +475,15 @@ var processGraph = {
 				//target node
 				ifchanged = false;
 				if(action.substring(0, 6) != "output") {
-					if(self._calculateNodeState(self._IDtoLine[action].target) === false) {
+					/*if(self._calculateNodeState(self._IDtoLine[action].target) === false) {
 						ifchanged = (self._IDtoLine[action].target.class != " unsatisfied-Node");
 						self._IDtoLine[action].target.class = " unsatisfied-Node";
 					}
 					else {
 						ifchanged = (self._IDtoLine[action].target.class != " satisfied-Node");
 						self._IDtoLine[action].target.class = " satisfied-Node";
-					}
+					}*/
+					ifchanged = true;
 				}
 				if(ifchanged === true) {
 					var tmpID = self._circlesProcessPrefix + self._IDtoLine[action].target.id;
@@ -523,12 +531,21 @@ var processGraph = {
 				var action = actionList[i];
 				self._IDtoLine[action].count ++;
 			}
-			for(var i = 0; i < self._lineArray.length; i++) {
+			/*for(var i = 0; i < self._lineArray.length; i++) {
 				if(self._lineArray[i].count == 1) {
 					self._lineArray[i].class = " one-time-line";
 				}
 				else if(self._lineArray[i].count > 1) {
 					self._lineArray[i].class = " moreThanTwo-time-line";
+				}
+				else {
+					self._lineArray[i].class = " zero-time-line";
+				}
+			}*/
+			for(var i = 0; i < self._lineArray.length; i++) {
+				var action = self._lineArray[i].id;
+				if(self.availableActions[action] === true) {
+					self._lineArray[i].class = " one-time-line";
 				}
 				else {
 					self._lineArray[i].class = " zero-time-line";
@@ -643,10 +660,10 @@ var processGraph = {
 					return "process-node" + n.class;
 				})
 				.on("mouseover", function(n) {
-					self.mouseoverNode(n);
+				//	self.mouseoverNode(n);
 				})
 				.on("mouseout", function(n) {
-					self.mouseoutNode(n);
+				//	self.mouseoutNode(n);
 				});
 			//nodeName
 			var names = self.processGraphSvgG.selectAll(".process-name")
@@ -703,18 +720,18 @@ var processGraph = {
 		//鼠标悬浮边事件
 		var self = this;
 		d3.select(l).classed("focus-highlight", true);
-		self._tip.html(function() {
+		/*self._tip.html(function() {
 			return "<b>count: </b><font color=\"#FF6347\">" 
 				+ d3.select(l).attr("count")
 				+ "</font>";
 		});
-		self._tip.show();
+		self._tip.show();*/
 	},
 	_mouseoutLink: function(l) {
 		//鼠标移开事件
 		var self = this;
 		d3.select(l).classed("focus-highlight", false);
-		self._tip.hide();
+		/*self._tip.hide();*/
 	},
 	mouseoverLinkFromStateGraph: function(lineID) {
 		//鼠标悬浮边事件
@@ -734,6 +751,7 @@ var processGraph = {
 	},
 	mouseoverNode: function(n) {
 		var self = this;
+		console.log(n)
 		var actionListIndex = [];
 		for(var i = 0; i < n.development.length; i++) {
 			var l = n.development[i].length;
